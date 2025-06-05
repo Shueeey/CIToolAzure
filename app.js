@@ -25,37 +25,37 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // ✅ NEW: Test DB connection route
-app.get('/test-db', async (req, res) => {
-  const config = {
-    server: process.env.AZURE_SQL_SERVER,
-    port: parseInt(process.env.AZURE_SQL_PORT),
-    database: process.env.AZURE_SQL_DATABASE,
-    user: process.env.AZURE_SQL_USERNAME,
-    password: process.env.AZURE_SQL_PASSWORD,
-    options: {
-      encrypt: true,
-      trustServerCertificate: false
-    }
-  };
-
-  try {
-    await sql.connect(config);
-
-    // Query the current database name and return a sample table
-    const dbNameResult = await sql.query`SELECT DB_NAME() AS CurrentDatabase`;
-    const sampleDataResult = await sql.query`SELECT TOP 5 * FROM YourTableName`; // change this to a real table name
-
-    res.json({
-      connectedDatabase: dbNameResult.recordset[0].CurrentDatabase,
-      sampleData: sampleDataResult.recordset
-    });
-  } catch (err) {
-    console.error('DB query error:', err);
-    res.status(500).json({ error: err.message });
-  } finally {
-    sql.close();
-  }
-});
+// app.get('/test-db', async (req, res) => {
+//   const config = {
+//     server: process.env.AZURE_SQL_SERVER,
+//     port: parseInt(process.env.AZURE_SQL_PORT),
+//     database: process.env.AZURE_SQL_DATABASE,
+//     user: process.env.AZURE_SQL_USERNAME,
+//     password: process.env.AZURE_SQL_PASSWORD,
+//     options: {
+//       encrypt: true,
+//       trustServerCertificate: false
+//     }
+//   };
+//
+//   try {
+//     await sql.connect(config);
+//
+//     // Query the current database name and return a sample table
+//     const dbNameResult = await sql.query`SELECT DB_NAME() AS CurrentDatabase`;
+//     const sampleDataResult = await sql.query`SELECT TOP 5 * FROM YourTableName`; // change this to a real table name
+//
+//     res.json({
+//       connectedDatabase: dbNameResult.recordset[0].CurrentDatabase,
+//       sampleData: sampleDataResult.recordset
+//     });
+//   } catch (err) {
+//     console.error('DB query error:', err);
+//     res.status(500).json({ error: err.message });
+//   } finally {
+//     sql.close();
+//   }
+// });
 
 
 // catch 404 and forward to error handler
