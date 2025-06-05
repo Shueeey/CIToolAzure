@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config(); // loads .env if running locally
+const sql = require('mssql');
 
 var indexRouter = require('./routes');
 var usersRouter = require('./routes/users');
@@ -20,6 +22,31 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+
+app.get('/api/ideas', async (req, res) => {
+  const config = {
+    server: process.env.AZURE_SQL_SERVER,
+    port: parseInt(process.env.AZURE_SQL_PORT),
+    database: process.env.AZURE_SQL_DATABASE,
+    user: process.env.AZURE_SQL_USERNAME,
+    password: process.env.AZURE_SQL_PASSWORD,
+    options: {
+      encrypt: true,
+      trustServerCertificate: true
+    }
+  };
+
+  try {
+    await sql.connect(config);
+    const result = await sql.query('SELECT * FROM YourTableName'); // replace with your actual table
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Database fetch failed:', err.message);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await sql.close();
+  }
+});
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
