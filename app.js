@@ -27,21 +27,28 @@ app.use('/users', usersRouter);
 // ✅ NEW: Test DB connection route
 app.get('/test-db', async (req, res) => {
   const config = {
-    server: process.env.AZURE_SQL_SERVER,         // e.g., 'continuousimprovementideas.database.windows.net'
-    port: parseInt(process.env.AZURE_SQL_PORT),   // usually 1433
-    database: process.env.AZURE_SQL_DATABASE,     // e.g., 'ContinuousImprovementIdeas'
-    user: process.env.AZURE_SQL_USERNAME,         // e.g., 'CloudSAffdb68dc'
-    password: process.env.AZURE_SQL_PASSWORD,     // stored securely
+    server: process.env.AZURE_SQL_SERVER,
+    port: parseInt(process.env.AZURE_SQL_PORT),
+    database: process.env.AZURE_SQL_DATABASE,
+    user: process.env.AZURE_SQL_USERNAME,
+    password: process.env.AZURE_SQL_PASSWORD,
     options: {
-      encrypt: true,                              // Required for Azure
+      encrypt: true,
       trustServerCertificate: false
     }
   };
 
   try {
     await sql.connect(config);
-    const result = await sql.query('SELECT * FROM YourTableName'); // Replace with your actual table name
-    res.json(result.recordset); // return rows as JSON
+
+    // Query the current database name and return a sample table
+    const dbNameResult = await sql.query`SELECT DB_NAME() AS CurrentDatabase`;
+    const sampleDataResult = await sql.query`SELECT TOP 5 * FROM YourTableName`; // change this to a real table name
+
+    res.json({
+      connectedDatabase: dbNameResult.recordset[0].CurrentDatabase,
+      sampleData: sampleDataResult.recordset
+    });
   } catch (err) {
     console.error('DB query error:', err);
     res.status(500).json({ error: err.message });
@@ -49,6 +56,7 @@ app.get('/test-db', async (req, res) => {
     sql.close();
   }
 });
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
