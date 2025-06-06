@@ -24,33 +24,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+console.log("does this even work");
 // ✅ DB connection check (prints to console on startup)
-async function testDbConnection() {
-  const config = {
-    server: process.env.AZURE_SQL_SERVER,
-    port: parseInt(process.env.AZURE_SQL_PORT),
-    database: process.env.AZURE_SQL_DATABASE,
-    user: process.env.AZURE_SQL_USERNAME,
-    password: process.env.AZURE_SQL_PASSWORD,
-    options: {
-      encrypt: true,
-      trustServerCertificate: false
-    }
-  };
-
-  try {
-    await sql.connect(config);
-    const result = await sql.query('SELECT TOP 3 * FROM YourTableName'); // replace with your actual table name
-    console.log('✅ Connected to Azure SQL. Sample data:');
-    console.table(result.recordset);
-  } catch (err) {
-    console.error('❌ DB connection failed:', err.message);
-  } finally {
-    await sql.close();
-  }
-}
-
-testDbConnection(); // <-- Called once when server starts
+// async function testDbConnection() {
+//   const config = {
+//     server: process.env.AZURE_SQL_SERVER,
+//     port: parseInt(process.env.AZURE_SQL_PORT),
+//     database: process.env.AZURE_SQL_DATABASE,
+//     user: process.env.AZURE_SQL_USERNAME,
+//     password: process.env.AZURE_SQL_PASSWORD,
+//     options: {
+//       encrypt: true,
+//       trustServerCertificate: false
+//     }
+//   };
+//
+//   try {
+//     await sql.connect(config);
+//     const result = await sql.query('SELECT TOP 3 * FROM YourTableName'); // replace with your actual table name
+//     console.log('✅ Connected to Azure SQL. Sample data:');
+//     console.table(result.recordset);
+//   } catch (err) {
+//     console.error('❌ DB connection failed:', err.message);
+//   } finally {
+//     await sql.close();
+//   }
+// }
+//
+// testDbConnection(); // <-- Called once when server starts
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
