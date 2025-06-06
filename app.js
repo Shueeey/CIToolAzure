@@ -24,7 +24,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-console.log("does this even work");
 // ✅ DB connection check (prints to console on startup)
 // async function testDbConnection() {
 //   const config = {
