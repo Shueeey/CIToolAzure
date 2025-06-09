@@ -629,8 +629,6 @@
   </style>
 </head>
 <body>
-<div id="errorMessage" style="display: none; color: red;"></div>
-<div id="testConnectionBtn" style="display: none; color: red;"></div>
 <!-- Header -->
 <div class="header">
   <div class="logo-section">
@@ -665,7 +663,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Debug Info Panel -->
 <div class="debug-info" id="debugInfo" style="display: none;">
@@ -1020,113 +1017,6 @@
     const str = value.toString().toLowerCase().trim();
     return str === 'true' || str === '1' || str === 'yes' || str === 'y' ||
             str === 'top5' || str === 'high' || str === 'priority';
-  }
-  async function loadDataFromDatabase() {
-    try {
-      console.log('🚀 Loading data from Azure SQL Database...');
-      document.getElementById('totalCount').textContent = 'Loading from database...';
-
-      const response = await fetch('/api/ideas');
-      const result = await response.json();
-
-      if (result.success) {
-        allData = result.data.map(item => ({
-          ID: item.ID,
-          Title: item.Title || 'Untitled',
-          Description: item.Description || '',
-          Status: item.Status || 'New',
-          Domain: item.Domain || 'General',
-          SubmittedBy: item.SubmittedBy || 'Unknown',
-          LeadOwner: item.LeadOwner || 'Unassigned',
-          Top5: item.Top5 || false,
-          Duration: item.Duration || 0,
-          DateSubmitted: item.DateSubmitted,
-          ExpectedCompletion: item.ExpectedCompletion,
-          ActualCompletion: item.ActualCompletion,
-          Rating: item.Rating,
-          Likes: item.Likes || 0,
-          isComplete: item.Status && item.Status.toLowerCase().includes('complet'),
-          isInProgress: item.Status && item.Status.toLowerCase().includes('progress'),
-          isTop5: item.Top5 || false
-        }));
-
-        filteredData = [...allData];
-        console.log(`✅ Loaded ${allData.length} records from database`);
-
-        initializeFilters();
-        renderBoard();
-        updateCounts();
-        hideError();
-
-      } else {
-        throw new Error(result.error || 'Failed to load data from database');
-      }
-    } catch (error) {
-      console.error('❌ Error loading data from database:', error);
-      showError(`Failed to load data from database: ${error.message}`);
-      loadSampleData(); // Fallback to sample data
-    }
-  }
-
-  // Test database connection
-  async function testDatabaseConnection() {
-    try {
-      document.getElementById('testConnectionBtn').textContent = '🔄 Testing...';
-
-      const response = await fetch('/api/db-status');
-      const status = await response.json();
-
-      updateDatabaseStatus(status);
-
-    } catch (error) {
-      console.error('❌ Error testing database connection:', error);
-      updateDatabaseStatus({
-        connected: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    } finally {
-      document.getElementById('testConnectionBtn').textContent = '🔗 Test Connection';
-    }
-  }
-
-  // Update database status panel
-  function updateDatabaseStatus(status) {
-    const panel = document.getElementById('dbStatusPanel');
-    const title = document.getElementById('dbStatusTitle');
-    const details = document.getElementById('dbStatusDetails');
-
-    if (status.connected) {
-      panel.className = 'db-status connected';
-      title.innerHTML = '✅ Azure SQL Database Connected';
-
-      let detailsText = `Connected to Azure SQL • Last checked: ${new Date(status.timestamp).toLocaleTimeString()}`;
-      if (status.totalRecords) {
-        detailsText += ` • ${status.totalRecords} total records`;
-      }
-      if (status.sampleData && status.sampleData.length > 0) {
-        const sampleTitles = status.sampleData.map(item => item.Title || 'Untitled').join(', ');
-        detailsText += `<br>Recent ideas: ${sampleTitles}`;
-      }
-
-      details.innerHTML = detailsText;
-    } else {
-      panel.className = 'db-status disconnected';
-      title.innerHTML = '❌ Database Connection Failed';
-      details.innerHTML = `Error: ${status.error || 'Unable to connect to database'}<br>Last checked: ${new Date(status.timestamp).toLocaleTimeString()}`;
-    }
-  }
-
-  // Show error message
-  function showError(message) {
-    const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-  }
-
-  // Hide error message
-  function hideError() {
-    document.getElementById('errorMessage').style.display = 'none';
   }
 
   // Load and parse data
@@ -1906,24 +1796,18 @@
 
   // Initialize the application
   document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
-  console.log('🗄️ Loading data from Azure SQL Database...');
-
-    // Load data from database on startup
-  loadDataFromDatabase();
-
-    // Test connection every 30 seconds
-  setInterval(testDatabaseConnection, 30000);
+    console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
+    console.log('📊 Loading data from Excel file...');
+    loadData();
   });
 
   // Initialize immediately if DOM is already loaded
   if (document.readyState === 'loading') {
-    // Wait for DOMContentLoaded
+    // Do nothing, wait for DOMContentLoaded
   } else {
     console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
-    console.log('🗄️ Loading data from Azure SQL Database...');
-    loadDataFromDatabase();
-    setInterval(testDatabaseConnection, 30000);
+    console.log('📊 Loading data from Excel file...');
+    loadData();
   }
 </script>
 </body>
