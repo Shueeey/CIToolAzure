@@ -1023,6 +1023,7 @@
   async function loadData() {
     try {
       console.log('🚀 Starting data load process...');
+      let currentDataSource = 'database';
       if (currentDataSource === 'database') {
         await loadFromDatabase();
       } else {
