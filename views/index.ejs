@@ -1023,14 +1023,81 @@
   async function loadData() {
     try {
       console.log('🚀 Starting data load process...');
-      await loadFromDirectory();
+      if (currentDataSource === 'database') {
+        await loadFromDatabase();
+      } else {
+        await loadFromDirectory();
+      }
     } catch (error) {
       console.error('❌ Error loading data:', error);
-      console.log('Please ensure SSCList.csv or SSCList.xlsx is in the same directory as index.html');
-      showFileUploadPrompt();
+      if (currentDataSource === 'database') {
+        console.log('Database connection failed, falling back to file upload or sample data');
+        showFileUploadPrompt();
+      } else {
+        console.log('Please ensure SSCList.csv or SSCList.xlsx is in the same directory as index.html');
+        showFileUploadPrompt();
+      }
     }
   }
+  // Load data from Azure SQL Database
+  async function loadFromDatabase() {
+    console.log('🗄️ Attempting to load data from Azure SQL Database...');
 
+    try {
+      // First, check database status
+      const statusResponse = await fetch('/api/db-status');
+      const statusData = await statusResponse.json();
+
+      if (!statusData.connected) {
+        throw new Error('Database not connected: ' + (statusData.error || 'Unknown error'));
+      }
+
+      console.log('✅ Database connection verified');
+      console.log(`📊 Total records in database: ${statusData.totalRecords}`);
+
+      // Load all ideas from database
+      const response = await fetch('/api/ideas');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiData = await response.json();
+
+      if (!apiData.success) {
+        throw new Error('API error: ' + (apiData.error || 'Unknown error'));
+      }
+
+      console.log('✅ Database data loaded successfully');
+      console.log(`📊 Retrieved ${apiData.data.length} records from database`);
+
+      // Transform database data to expected format
+      allData = transformDatabaseData(apiData.data);
+
+      console.log(`✅ Transformed data: ${allData.length} valid records`);
+      console.log('📊 Sample record:', allData[0]);
+
+      if (allData.length === 0) {
+        throw new Error('No valid records found in database');
+      }
+
+      filteredData = [...allData];
+
+      // Update UI
+      initializeFilters();
+      renderBoard();
+      updateCounts();
+      updateDebugInfo(`Database data loaded successfully: ${allData.length} ideas`);
+
+      // Set active button state
+      document.getElementById('loadDatabaseBtn').classList.add('active');
+      document.getElementById('uploadBtn').classList.remove('active');
+
+    } catch (error) {
+      console.error('❌ Database loading error:', error);
+      throw error;
+    }
+  }
   // Load directly from directory
   async function loadFromDirectory() {
     // Try Excel file first
