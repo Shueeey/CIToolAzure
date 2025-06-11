@@ -946,6 +946,55 @@
     return mapping;
   }
 
+
+  // Transform database data to match expected format
+  function transformDatabaseData(dbData) {
+    console.log('🔄 Transforming database data:', dbData.length, 'records');
+
+    return dbData.map((item, index) => {
+      const transformed = {};
+
+      // Direct mapping from database columns
+      transformed.ID = item.ID || index + 1;
+      transformed.Title = item.Title || 'Untitled';
+      transformed.Description = item.Idea || item.Description || '';
+      transformed.Status = item.State || item.Status || 'New';
+      transformed.Domain = item.Team || item.Domain || 'General';
+      transformed.SubmittedBy = item.SubmittedBy || 'Unknown';
+      transformed.LeadOwner = item.LeadOwner || item.Lead || 'Unassigned';
+
+      // Handle priority/Top5 field
+      transformed.Top5 = interpretBooleanValue(item.isTop6 || item.Prioritised_for_Review || false);
+
+      // Handle operational and closed status
+      transformed.Operational = interpretBooleanValue(item.Operational);
+      transformed.Closed = interpretBooleanValue(item.Closed);
+
+      // Handle dates
+      transformed.DateSubmitted = item.Date || item.DateSubmitted;
+      transformed.ExpectedCompletion = item.ExpectedCompletion;
+      transformed.ActualCompletion = item.Closed_Date || item.ActualCompletion;
+
+      // Handle other fields
+      transformed.Notes = item.Notes || '';
+      transformed.PowerAppsId = item.PowerAppsId || '';
+      transformed.Created_By = item.Created_By || '';
+      transformed.Item_Type = item.Item_Type || '';
+      transformed.Priority_Level = item.Priority_Level || '';
+      transformed.Proposed_Solution = item.Proposed_Solution || '';
+
+      // Add computed fields
+      transformed.isComplete = transformed.Closed || (transformed.Status && transformed.Status.toLowerCase().includes('complet'));
+      transformed.isInProgress = transformed.Status && transformed.Status.toLowerCase().includes('progress');
+      transformed.isTop5 = transformed.Top5;
+
+      // Handle progress/duration (if we add this field later)
+      transformed.Duration = 0; // Can be calculated based on status
+
+      return transformed;
+    }).filter(item => item.ID && item.Title); // Only keep items with ID and Title
+  }
+
   // Transform raw data using detected column mappings
   function transformDataWithMapping(rawData, mapping) {
     console.log('🔄 Transforming data with mapping:', mapping);
@@ -987,7 +1036,6 @@
       return transformed;
     }).filter(item => item.ID && item.Title); // Only keep items with ID and Title
   }
-
   // Helper function to get field value from row
   function getFieldValue(row, fieldName) {
     if (!fieldName || !row) return null;
@@ -1243,8 +1291,8 @@
     });
   }
 
-  // Finalize data processing with automatic structure detection
-  async function finalizeDataProcessing(rawData, headers) {
+
+  async function finalizeDataProcessing(rawData, headers, source = 'file') {
     console.log('🔄 Finalizing data processing...');
     console.log(`📊 Raw data: ${rawData.length} records`);
     console.log('📋 Headers:', headers);
@@ -1252,12 +1300,17 @@
     // Store raw headers for debugging
     rawHeaders = headers;
 
-    // Detect column mappings
-    columnMapping = detectColumnMappings(headers);
-    console.log('🗺️ Column mapping:', columnMapping);
+    if (source === 'file') {
+      // Detect column mappings for file data
+      columnMapping = detectColumnMappings(headers);
+      console.log('🗺️ Column mapping:', columnMapping);
 
-    // Transform data using detected mappings
-    allData = transformDataWithMapping(rawData, columnMapping);
+      // Transform data using detected mappings
+      allData = transformDataWithMapping(rawData, columnMapping);
+    } else {
+      // Data is already from database, use direct transformation
+      allData = transformDatabaseData(rawData);
+    }
 
     // Filter out invalid records
     const validData = allData.filter(item => item.ID && item.Title);
@@ -1265,7 +1318,7 @@
 
     if (validData.length === 0) {
       console.warn('⚠️ No valid records found - check your data structure');
-      updateDebugInfo('No valid records found. Please check that your Excel file has ID and Title columns.');
+      updateDebugInfo('No valid records found. Please check that your data has ID and Title columns.');
       return;
     }
 
@@ -1279,7 +1332,13 @@
     initializeFilters();
     renderBoard();
     updateCounts();
-    updateDebugInfo('Data loaded successfully');
+    updateDebugInfo(`Data loaded successfully from ${source}: ${allData.length} ideas`);
+
+    // Update button states
+    if (source === 'file') {
+      document.getElementById('uploadBtn').classList.add('active');
+      document.getElementById('loadDatabaseBtn').classList.remove('active');
+    }
 
     // Verify rendering
     setTimeout(() => {
@@ -1287,7 +1346,6 @@
       console.log(`🎯 Verification: ${totalCards} cards rendered across all columns`);
     }, 100);
   }
-
   // Handle file upload
   function handleFileUpload(event) {
     const file = event.target.files[0];
