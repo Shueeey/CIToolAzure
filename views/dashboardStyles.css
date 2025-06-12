@@ -1,0 +1,126 @@
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: max-content;
+}
+.topbar-date {
+    display: flex;
+    gap: 10px;
+    border: 1px solid black;
+    border-right: none;
+}
+.top-date {
+    border: none;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    padding: 5px;
+}
+.topbar-team {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.tables {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    justify-items: center;
+    margin-top: 10px;
+    height: 95%;
+}
+
+/* UPDATED: Grid positioning for tables 4 and 5 */
+.table-4 {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.tables > div:last-child {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.table-1 label,
+.table-2 label,
+.table-3 label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.table-common {
+    width: 400px;
+    border-collapse: collapse;
+}
+
+/* Shared cell styles */
+.table-common th,
+.table-common td {
+    padding: 4px 6px;
+    width: min-content;
+    font-size: 12px;
+}
+
+/* Header cells */
+.table-common th {
+    background-color: #ff6b35;
+    color: white;
+    width: 30%;
+    text-align: left;
+}
+.table-1-count td {
+    text-align: center;
+}
+.table-1-count td:last-child {
+    width: 70%;
+}
+.table-1-count th,
+.table-1-count td,
+.table-2-team th,
+.table-2-team td,
+.table-3-priority th,
+.table-3-priority td {
+    text-align: center;
+}
+
+.table-1-count,
+.table-2-team {
+    width: 100%;
+    max-width: 400px;
+}
+
+.table-3-priority {
+    table-layout: fixed;
+}
+
+.table-4-current, .table-5-PIR {
+  border-collapse: collapse;
+}
+
+/* Add borders to all cells by default */
+.table-4-current td, 
+.table-4-current th, 
+.table-5-PIR td, 
+.table-5-PIR th {
+    border: 1px solid black;
+}
+
+/* Remove left border of first column */
+.table-4-current td:first-child,
+.table-4-current th:first-child,
+.table-5-PIR td:first-child,
+.table-5-PIR th:first-child {
+    border: none;
+}
+
+/* Remove top border of first row */
+.table-4-current tr:first-child td,
+.table-4-current tr:first-child th,
+.table-5-PIR tr:first-child td,
+.table-5-PIR tr:first-child th {
+    border: none;
+}
