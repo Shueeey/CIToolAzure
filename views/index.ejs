@@ -1098,7 +1098,7 @@
       // First, check database status
       const statusResponse = await fetch('/api/db-status');
       const statusData = await statusResponse.json();
-
+    //
       if (!statusData.connected) {
         throw new Error('Database not connected: ' + (statusData.error || 'Unknown error'));
       }
