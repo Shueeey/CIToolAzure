@@ -1079,8 +1079,6 @@
       }
     } catch (error) {
       console.error('❌ Error loading data:', error);
-      let currentDataSource = 'database'; // will change later to be dynamic
-
       if (currentDataSource === 'database') {
         console.log('Database connection failed, falling back to file upload or sample data');
         showFileUploadPrompt();
@@ -1098,7 +1096,7 @@
       // First, check database status
       const statusResponse = await fetch('/api/db-status');
       const statusData = await statusResponse.json();
-    //
+
       if (!statusData.connected) {
         throw new Error('Database not connected: ' + (statusData.error || 'Unknown error'));
       }
