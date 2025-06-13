@@ -1069,7 +1069,6 @@
 
   // Load and parse data
   async function loadData() {
-    let currentDataSource = 'database';
     try {
       console.log('🚀 Starting data load process...');
       let currentDataSource = 'database'; // will change later to be dynamic
@@ -1080,6 +1079,8 @@
       }
     } catch (error) {
       console.error('❌ Error loading data:', error);
+      let currentDataSource = 'database'; // will change later to be dynamic
+
       if (currentDataSource === 'database') {
         console.log('Database connection failed, falling back to file upload or sample data');
         showFileUploadPrompt();
