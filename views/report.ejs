@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard</title>
+    <title>Reports</title>
     <!-- Add your CSS files or styles here -->
     <link rel="stylesheet" href="/stylesheets/reportStyles.css" />
     <link rel="stylesheet" href="/stylesheets/style.css">
@@ -12,34 +12,33 @@
 <!-- Header -->
 <div class="header">
     <div class="logo-section">
-        <div class="logo">SSC</div>
         <div class="breadcrumb">
-            <span>Reports</span>
+            <span>Agile boards</span>
             <span>/</span>
-            <span class="board-title">Shared Service Centre Continuous Improvement Reporting</span>
+            <span class="board-title">SSC Continuous Improvement Board</span>
         </div>
     </div>
 
     <div class="header-controls">
         <div class="search-header">
-            <span class="search-icon">🔍</span>
+            <i class="fas fa-search search-icon"></i>
             <input type="text" id="searchInput" placeholder="Filter ideas on the board">
         </div>
         <div class="file-upload">
             <input type="file" id="fileInput" accept=".csv,.xlsx" style="display: none;">
             <button id="uploadBtn" style="background: #ff6b35; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
-                📁 Load Data
+                <i class="fas fa-folder"></i> Load Data
             </button>
         </div>
         <div class="view-controls">
             <span class="total-count" id="totalCount">Loading...</span>
             <button id="refreshBtn" style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
-                🔄 Refresh
+                <i class="fas fa-sync-alt"></i> Refresh
             </button>
             <button id="debugBtn" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;">
-                🔍 Debug
+                <i class="fas fa-bug"></i> Debug
             </button>
-            <span>📊</span>
+            <i class="fas fa-chart-bar"></i>
         </div>
     </div>
 </div>
@@ -47,32 +46,64 @@
 <div class="container">
     <!-- Sidebar -->
     <div class="sidebar">
-        <nav class="nav-menu">
-            <a href="#" class="nav-item">
-                <span class="nav-icon">✓</span>
-                Issues
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-icon">📊</span>
-                Dashboards
-            </a>
-            <a href="/index" class="nav-item">
-                <span class="nav-icon">📋</span>
-                Agile Boards
-            </a>
-            <a href="/report" class="nav-item active">
-                <span class="nav-icon">📈</span>
-                Reports
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-icon">📁</span>
-                Projects
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-icon">📚</span>
-                Knowledge Base
-            </a>
-        </nav>
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">SSC</div>
+            <span>Continuous Improvement</span>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Main Menu</div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Issues</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-columns"></i>
+                    <span>Agile Boards</span>
+                </a>
+                <a href="/report" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Projects</div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Projects</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-book"></i>
+                    <span>Knowledge Base</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Teams</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Tools</div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add New Idea</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
     </div>
     <div class="main-content">
         <!-- Topbar: Date and Team -->
