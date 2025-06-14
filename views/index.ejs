@@ -1085,16 +1085,18 @@
       const menuItems = document.querySelectorAll('.nav-item');
       menuItems.forEach(item => {
         item.addEventListener('click', (e) => {
-          e.preventDefault();
+          // Only prevent default if it's a placeholder link (#)
+          if (item.getAttribute('href') === '#') {
+            e.preventDefault();
+          }
 
-          // Remove active from all items
-          menuItems.forEach(i => i.classList.remove('active'));
+          menuItems.forEach(i => i.classList.remove('active')); // removes active from all items
 
-          // Add active to clicked item with animation
-          item.classList.add('active');
+          item.classList.add('active'); // for active click animation
 
-          // Optional: Add a ripple effect
-          this.createRippleEffect(item, e);
+          this.createRippleEffect(item, e); //for ripple effect
+
+
         });
 
         // Enhanced hover effects
