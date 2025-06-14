@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SSC Continuous Improvement Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -26,25 +27,13 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-left: 200px; /* Account for sidebar width */
     }
 
     .logo-section {
       display: flex;
       align-items: center;
       gap: 15px;
-    }
-
-    .logo {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(45deg, #ff6b35 0%, #ff8c42 100%);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
     }
 
     .breadcrumb {
@@ -118,7 +107,7 @@
       border: 1px solid #e9ecef;
       border-radius: 6px;
       padding: 10px;
-      margin: 10px 20px;
+      margin: 10px 20px 10px 220px; /* Account for sidebar */
       font-size: 12px;
       color: #6c757d;
     }
@@ -128,51 +117,123 @@
       height: calc(100vh - 60px);
     }
 
-    /* Sidebar */
+    /* Enhanced Sidebar */
     .sidebar {
       width: 200px;
       background-color: #f8f9fa;
       border-right: 1px solid #e9ecef;
-      padding: 20px 0;
       height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 20px 0;
+      overflow-y: auto;
+    }
 
+    /* Logo section in sidebar */
+    .sidebar-logo {
+      padding: 0 15px 25px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #333333;
+      border-bottom: 1px solid #e9ecef;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(45deg, #ff6b35 0%, #ff8c42 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* Menu sections */
+    .menu-section {
+      margin-bottom: 30px;
+    }
+
+    .menu-title {
+      text-transform: uppercase;
+      font-size: 11px;
+      padding: 0 15px 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #6c757d;
     }
 
     .nav-menu {
-      padding: 0 15px;
+      padding: 0;
     }
 
     .nav-item {
       display: flex;
       align-items: center;
-      padding: 10px 12px;
+      padding: 12px 15px;
       color: #6c757d;
       text-decoration: none;
       font-size: 14px;
+      margin: 2px 8px;
       border-radius: 6px;
-      margin-bottom: 4px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      position: relative;
+      cursor: pointer;
     }
 
     .nav-item:hover {
       background-color: #e9ecef;
       color: #333333;
+      transform: translateX(3px);
     }
 
     .nav-item.active {
       background-color: #ff6b35;
       color: white;
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 20px;
+      background-color: #ff6b35;
+      border-radius: 0 2px 2px 0;
     }
 
     .nav-icon {
       width: 16px;
       height: 16px;
-      margin-right: 10px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    /* Add some better icons using FontAwesome */
+    .nav-item i {
+      width: 16px;
+      margin-right: 12px;
+      text-align: center;
+      font-size: 14px;
     }
 
     /* Main Content */
     .main-content {
       flex: 1;
+      margin-left: 200px; /* Account for sidebar width */
       padding: 20px;
       overflow: auto;
       background-color: #ffffff;
@@ -336,7 +397,7 @@
     .priority-indicator.top5 { background-color: #ff6b35; }
     .priority-indicator.normal { background-color: #28a745; }
 
-    /* Modal */
+    /* Modal styles remain the same */
     .modal {
       display: none;
       position: fixed;
@@ -607,7 +668,42 @@
     /* Responsive */
     @media (max-width: 768px) {
       .sidebar {
+        width: 70px;
+      }
+
+      .sidebar-logo span {
         display: none;
+      }
+
+      .menu-title {
+        display: none;
+      }
+
+      .nav-item span {
+        display: none;
+      }
+
+      .nav-item {
+        justify-content: center;
+        padding: 15px;
+        margin: 2px 5px;
+      }
+
+      .nav-item i {
+        margin-right: 0;
+        font-size: 16px;
+      }
+
+      .header {
+        margin-left: 70px;
+      }
+
+      .main-content {
+        margin-left: 70px;
+      }
+
+      .debug-info {
+        margin-left: 90px;
       }
 
       .board-container {
@@ -633,7 +729,6 @@
 <!-- Header -->
 <div class="header">
   <div class="logo-section">
-    <div class="logo">SSC</div>
     <div class="breadcrumb">
       <span>Agile boards</span>
       <span>/</span>
@@ -643,24 +738,24 @@
 
   <div class="header-controls">
     <div class="search-header">
-      <span class="search-icon">🔍</span>
+      <i class="fas fa-search search-icon"></i>
       <input type="text" id="searchInput" placeholder="Filter ideas on the board">
     </div>
     <div class="file-upload">
       <input type="file" id="fileInput" accept=".csv,.xlsx" style="display: none;">
       <button id="uploadBtn" style="background: #ff6b35; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
-        📁 Load Data
+        <i class="fas fa-folder"></i> Load Data
       </button>
     </div>
     <div class="view-controls">
       <span class="total-count" id="totalCount">Loading...</span>
       <button id="refreshBtn" style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
-        🔄 Refresh
+        <i class="fas fa-sync-alt"></i> Refresh
       </button>
       <button id="debugBtn" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;">
-        🔍 Debug
+        <i class="fas fa-bug"></i> Debug
       </button>
-      <span>📊</span>
+      <i class="fas fa-chart-bar"></i>
     </div>
   </div>
 </div>
@@ -672,34 +767,66 @@
 </div>
 
 <div class="container">
-  <!-- Sidebar -->
+  <!-- Enhanced Sidebar -->
   <div class="sidebar">
-    <nav class="nav-menu">
-      <a href="#" class="nav-item">
-        <span class="nav-icon">✓</span>
-        Issues
-      </a>
-      <a href="#" class="nav-item">
-        <i class="fas fa-th-large"></i>
-        Dashboard
-      </a>
-      <a href="#" class="nav-item active">
-        <i class="fas fa-chart-bar"></i>
-        Agile Boards
-      </a>
-      <a href="/report" class="nav-item">
-        <span class="nav-icon">📈</span>
-        Reports
-      </a>
-      <a href="#" class="nav-item">
-        <span class="nav-icon">📁</span>
-        Projects
-      </a>
-      <a href="#" class="nav-item">
-        <span class="nav-icon">📚</span>
-        Knowledge Base
-      </a>
-    </nav>
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">SSC</div>
+      <span>Continuous Improvement</span>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-title">Main Menu</div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>Issues</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-th-large"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item active">
+          <i class="fas fa-columns"></i>
+          <span>Agile Boards</span>
+        </a>
+        <a href="/report" class="nav-item">
+          <i class="fas fa-chart-line"></i>
+          <span>Reports</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-title">Projects</div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item">
+          <i class="fas fa-folder-open"></i>
+          <span>Projects</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-book"></i>
+          <span>Knowledge Base</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-users"></i>
+          <span>Teams</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-title">Tools</div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add New Idea</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </div>
   </div>
 
   <!-- Main Content -->
@@ -793,7 +920,7 @@
           <div class="description-text" id="modalDescription"></div>
         </div>
         <div class="activity-section">
-          <h3>🕒 Activity</h3>
+          <h3><i class="fas fa-clock"></i> Activity</h3>
           <div id="modalActivity"></div>
         </div>
       </div>
@@ -947,6 +1074,88 @@
     return mapping;
   }
 
+  // Enhanced sidebar functionality
+  class SidebarManager {
+    constructor() {
+      this.initSidebarEvents();
+    }
+
+    initSidebarEvents() {
+      // Menu item selection with smooth transitions
+      const menuItems = document.querySelectorAll('.nav-item');
+      menuItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // Remove active from all items
+          menuItems.forEach(i => i.classList.remove('active'));
+
+          // Add active to clicked item with animation
+          item.classList.add('active');
+
+          // Optional: Add a ripple effect
+          this.createRippleEffect(item, e);
+        });
+
+        // Enhanced hover effects
+        item.addEventListener('mouseenter', () => {
+          if (!item.classList.contains('active')) {
+            item.style.transform = 'translateX(3px)';
+          }
+        });
+
+        item.addEventListener('mouseleave', () => {
+          if (!item.classList.contains('active')) {
+            item.style.transform = 'translateX(0)';
+          }
+        });
+      });
+    }
+
+    createRippleEffect(element, event) {
+      const rect = element.getBoundingClientRect();
+      const size = 60;
+      const x = event.clientX - rect.left - size / 2;
+      const y = event.clientY - rect.top - size / 2;
+
+      const ripple = document.createElement('span');
+      ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                left: ${x}px;
+                top: ${y}px;
+                pointer-events: none;
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+            `;
+
+      // Add ripple animation CSS if not already present
+      if (!document.querySelector('#ripple-styles')) {
+        const style = document.createElement('style');
+        style.id = 'ripple-styles';
+        style.textContent = `
+                    @keyframes ripple {
+                        to {
+                            transform: scale(2);
+                            opacity: 0;
+                        }
+                    }
+                `;
+        document.head.appendChild(style);
+      }
+
+      element.style.position = 'relative';
+      element.style.overflow = 'hidden';
+      element.appendChild(ripple);
+
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    }
+  }
 
   // Transform database data to match expected format
   function transformDatabaseData(dbData) {
@@ -1037,6 +1246,7 @@
       return transformed;
     }).filter(item => item.ID && item.Title); // Only keep items with ID and Title
   }
+
   // Helper function to get field value from row
   function getFieldValue(row, fieldName) {
     if (!fieldName || !row) return null;
@@ -1089,6 +1299,7 @@
       }
     }
   }
+
   // Load data from Azure SQL Database
   async function loadFromDatabase() {
     console.log('🗄️ Attempting to load data from Azure SQL Database...');
@@ -1139,15 +1350,12 @@
       updateCounts();
       updateDebugInfo(`Database data loaded successfully: ${allData.length} ideas`);
 
-      // Set active button state
-      document.getElementById('loadDatabaseBtn').classList.add('active');
-      document.getElementById('uploadBtn').classList.remove('active');
-
     } catch (error) {
       console.error('❌ Database loading error:', error);
       throw error;
     }
   }
+
   // Load directly from directory
   async function loadFromDirectory() {
     // Try Excel file first
@@ -1292,7 +1500,6 @@
     });
   }
 
-
   async function finalizeDataProcessing(rawData, headers, source = 'file') {
     console.log('🔄 Finalizing data processing...');
     console.log(`📊 Raw data: ${rawData.length} records`);
@@ -1335,18 +1542,13 @@
     updateCounts();
     updateDebugInfo(`Data loaded successfully from ${source}: ${allData.length} ideas`);
 
-    // Update button states
-    if (source === 'file') {
-      document.getElementById('uploadBtn').classList.add('active');
-      document.getElementById('loadDatabaseBtn').classList.remove('active');
-    }
-
     // Verify rendering
     setTimeout(() => {
       const totalCards = Object.values(getColumnCounts()).reduce((sum, count) => sum + count, 0);
       console.log(`🎯 Verification: ${totalCards} cards rendered across all columns`);
     }, 100);
   }
+
   // Handle file upload
   function handleFileUpload(event) {
     const file = event.target.files[0];
@@ -1454,7 +1656,6 @@
     const domainFilter = document.getElementById('domainFilter');
     const statusFilter = document.getElementById('stateFilter');
 
-
     // Clear existing options (except the first "All" option)
     domainFilter.innerHTML = '<option value="">All Domains</option>';
     statusFilter.innerHTML = '<option value="">All States</option>';
@@ -1510,7 +1711,6 @@
       }
 
       return matchesSearch && matchesDomain && matchesStatus && matchesPriority && matchesTime;
-
     });
 
     renderBoard();
@@ -1782,7 +1982,6 @@
 
     modalSubmittedBy.textContent = (item.SubmittedBy ? item.SubmittedBy.split(';')[0].trim() : '') || 'Unknown';
     modalLeadOwner.textContent = (item.LeadOwner   ? item.LeadOwner.split(';')[0].trim()   : '') || 'Unassigned';
-//
 
     modalStatus.innerHTML = `
             <span class="state-badge ${getStatusBadgeClass(item.Status)}">
@@ -1925,6 +2124,10 @@
   document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
     console.log('📊 Loading data from Excel file...');
+
+    // Initialize sidebar manager
+    new SidebarManager();
+
     loadData();
   });
 
@@ -1934,6 +2137,10 @@
   } else {
     console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
     console.log('📊 Loading data from Excel file...');
+
+    // Initialize sidebar manager
+    new SidebarManager();
+
     loadData();
   }
 </script>
