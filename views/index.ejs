@@ -1189,7 +1189,7 @@
       transformed.isInProgress = transformed.Status && transformed.Status.toLowerCase().includes('progress');
 
       // Handle priority/Top5 field - only if item is NOT completed
-      const isTop5Priority = interpretBooleanValue(item.isTop6 || item.Prioritised_for_Review || false);
+      const isTop5Priority = interpretBooleanValue(item.isTop6);
       transformed.Top5 = isTop5Priority && !transformed.isComplete;
       transformed.isTop5 = transformed.Top5;
 
