@@ -578,66 +578,141 @@
 </head>
 <body>
 <!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">SSC</div>
-        <span>Continuous Improvement</span>
+<div class="container">
+    <!-- Enhanced Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">SSC</div>
+            <span>Continuous Improvement</span>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Main Menu</div>
+            <nav class="nav-menu">
+                <a href="/dashboard" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>My Ideas</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-columns"></i>
+                    <span>All Ideas</span>
+                </a>
+                <a href="/report" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Projects</div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Projects</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-book"></i>
+                    <span>Knowledge Base</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Teams</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Tools</div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add New Idea</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
     </div>
 
-    <div class="menu-section">
-        <div class="menu-title">Main Menu</div>
-        <nav class="nav-menu">
-            <a href="#" class="nav-item active">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-lightbulb"></i>
-                <span>My Ideas</span>
-            </a>
-            <a href="/index" class="nav-item">
-                <i class="fas fa-columns"></i>
-                <span>All Ideas</span>
-            </a>
-            <a href="/report" class="nav-item">
-                <i class="fas fa-chart-line"></i>
-                <span>Reports</span>
-            </a>
-        </nav>
-    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Filters -->
+        <div class="filters-section">
+            <select class="filter-select" id="domainFilter">
+                <option value="">All Domains</option>
+            </select>
+            <select class="filter-select" id="stateFilter">
+                <option value="">All States</option>
+            </select>
+            <!-- Time Range Filter -->
+            <input type="datetime-local" id="startTime" class="filter-select" placeholder="Start Time">
+            <input type="datetime-local" id="endTime" class="filter-select" placeholder="End Time">
+            <select class="filter-select" id="priorityFilter">
+                <option value="">All Priorities</option>
+                <option value="true">Top 5 Only</option>
+                <option value="false">Regular Priority</option>
+            </select>
+        </div>
 
-    <div class="menu-section">
-        <div class="menu-title">Projects</div>
-        <nav class="nav-menu">
-            <a href="#" class="nav-item">
-                <i class="fas fa-folder-open"></i>
-                <span>Projects</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-book"></i>
-                <span>Knowledge Base</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Teams</span>
-            </a>
-        </nav>
-    </div>
+        <!-- Board -->
+        <div class="board-container">
+            <div class="column">
+                <div class="column-header">
+                    <span class="column-title">New</span>
+                    <span class="column-count" id="newCount">0</span>
+                </div>
+                <div class="column-content" id="newColumn"></div>
+            </div>
 
-    <div class="menu-section">
-        <div class="menu-title">Tools</div>
-        <nav class="nav-menu">
-            <a href="#" class="nav-item">
-                <i class="fas fa-plus-circle"></i>
-                <span>Add New Idea</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </a>
-        </nav>
+            <div class="column">
+                <div class="column-header">
+                    <span class="column-title">Prioritised</span>
+                    <span class="column-count" id="prioritisedCount">0</span>
+                </div>
+                <div class="column-content" id="prioritisedColumn"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <span class="column-title">Scoping</span>
+                    <span class="column-count" id="scopingCount">0</span>
+                </div>
+                <div class="column-content" id="scopingColumn"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <span class="column-title">In Progress</span>
+                    <span class="column-count" id="inProgressCount">0</span>
+                </div>
+                <div class="column-content" id="inProgressColumn"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <span class="column-title">Operational</span>
+                    <span class="column-count" id="operationalCount">0</span>
+                </div>
+                <div class="column-content" id="operationalColumn"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <span class="column-title">Completed</span>
+                    <span class="column-count" id="completedCount">0</span>
+                </div>
+                <div class="column-content" id="completedColumn"></div>
+            </div>
+        </div>
     </div>
-</div>
+</div>>
 
 <!-- Header -->
 <div class="header">
