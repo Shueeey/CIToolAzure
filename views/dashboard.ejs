@@ -337,6 +337,18 @@
         }
 
         /* New Gantt Chart Styles */
+        .gantt-title {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            grid-column: 1 / -1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
         .gantt-header {
             font-size: 18px;
             font-weight: 600;
@@ -862,9 +874,10 @@
 
             <!-- New Gantt Chart Implementation -->
             <div class="gantt-container">
-                <div class="gantt-header">
-                    <div class="gantt-title">Top Priority</div>
-                    <div class="gantt-subtitle">Ideas</div>
+                <div class="gantt-title">
+                    <div class="gantt-header">
+                        <div class="gantt-title">Top Priority Ideas</div>
+                    </div>
                 </div>
 
                 <!-- Month Header -->
