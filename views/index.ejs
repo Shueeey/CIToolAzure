@@ -1175,9 +1175,6 @@
       transformed.SubmittedBy = item.SubmittedBy || 'Unknown';
       transformed.LeadOwner = item.LeadOwner || item.Lead || 'Unassigned';
 
-      // Handle priority/Top5 field
-      transformed.Top5 = interpretBooleanValue(item.isTop6 || item.Prioritised_for_Review || false);
-
       // Handle operational and closed status
       transformed.Operational = interpretBooleanValue(item.Operational);
       transformed.Closed = interpretBooleanValue(item.Closed);
@@ -1187,6 +1184,15 @@
       transformed.ExpectedCompletion = item.ExpectedCompletion;
       transformed.ActualCompletion = item.Closed_Date || item.ActualCompletion;
 
+      // Add computed fields
+      transformed.isComplete = transformed.Closed || (transformed.Status && transformed.Status.toLowerCase().includes('complet'));
+      transformed.isInProgress = transformed.Status && transformed.Status.toLowerCase().includes('progress');
+
+      // Handle priority/Top5 field - only if item is NOT completed
+      const isTop5Priority = interpretBooleanValue(item.isTop6 || item.Prioritised_for_Review || false);
+      transformed.Top5 = isTop5Priority && !transformed.isComplete;
+      transformed.isTop5 = transformed.Top5;
+
       // Handle other fields
       transformed.Notes = item.Notes || '';
       transformed.PowerAppsId = item.PowerAppsId || '';
@@ -1195,10 +1201,6 @@
       transformed.Priority_Level = item.Priority_Level || '';
       transformed.Proposed_Solution = item.Proposed_Solution || '';
 
-      // Add computed fields
-      transformed.isComplete = transformed.Closed || (transformed.Status && transformed.Status.toLowerCase().includes('complet'));
-      transformed.isInProgress = transformed.Status && transformed.Status.toLowerCase().includes('progress');
-      transformed.isTop5 = transformed.Top5;
 
       // Handle progress/duration (if we add this field later)
       transformed.Duration = 0; // Can be calculated based on status
@@ -1223,10 +1225,6 @@
       transformed.SubmittedBy = getFieldValue(row, mapping.submittedBy) || 'Unknown';
       transformed.LeadOwner = getFieldValue(row, mapping.leadOwner) || 'Unassigned';
 
-      // Handle priority/Top5 field
-      const priorityValue = getFieldValue(row, mapping.priority);
-      transformed.Top5 = interpretBooleanValue(priorityValue);
-
       // Handle progress/duration
       const progressValue = getFieldValue(row, mapping.progress);
       transformed.Duration = parseFloat(progressValue) || 0;
@@ -1243,6 +1241,10 @@
       // Add computed fields
       transformed.isComplete = transformed.Status && transformed.Status.toLowerCase().includes('complet');
       transformed.isInProgress = transformed.Status && transformed.Status.toLowerCase().includes('progress');
+
+      // Handle priority/Top5 field - only if item is NOT completed
+      const priorityValue = getFieldValue(row, mapping.priority);
+      transformed.Top5 = priorityValue && !transformed.isComplete;
       transformed.isTop5 = transformed.Top5;
 
       return transformed;
