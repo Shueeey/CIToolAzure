@@ -28,7 +28,7 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-left: 200px; /* Account for sidebar width */
+            margin-left: 200px;
         }
 
         .logo-section {
@@ -222,7 +222,7 @@
         /* Main Content */
         .main-content {
             flex: 1;
-            margin-left: 200px; /* Account for sidebar width */
+            margin-left: 200px;
             padding: 20px;
             overflow: auto;
             background-color: #ffffff;
@@ -450,55 +450,133 @@
             flex: 1;
         }
 
-        /* Add Project */
-        .add-project-container {
+        /* Journey Stepper Styles */
+        .journey-container {
             background-color: #ffffff;
             border-radius: 10px;
-            padding: 20px;
+            padding: 24px;
             border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .journey-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #E64626;
             text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .step-container:hover {
+            transform: translateX(4px);
+        }
+
+        .step-icon-line {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 180px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .add-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #ff6b35 0%, #e64626 100%);
+        .step-icon {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 24px;
-            margin-bottom: 15px;
+            font-size: 16px;
+            transition: all 0.2s ease-in-out;
         }
 
-        .add-title {
-            font-size: 18px;
+        .step-icon.active {
+            background-color: #E64626;
+            color: white;
+        }
+
+        .step-icon.inactive {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+
+        .step-line {
+            width: 2px;
+            height: 32px;
+            margin-top: 8px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .step-line.active {
+            background-color: #E64626;
+        }
+
+        .step-line.inactive {
+            background-color: #f0f0f0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .step-title.active {
+            color: #E64626;
+        }
+
+        .step-title.inactive {
+            color: #666;
+        }
+
+        .step-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+            opacity: 1;
+            max-height: 100px;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .step-description.hidden {
+            opacity: 0;
+            max-height: 0;
+        }
+
+        .journey-note {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .journey-note i {
+            color: #E64626;
+            margin-top: 4px;
+        }
+
+        .journey-note-text {
+            font-size: 14px;
             color: #333;
-        }
-
-        .add-btn {
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .add-btn:hover {
-            background: #e55a2b;
-            transform: translateY(-2px);
+            line-height: 1.4;
         }
 
         /* Today's Tasks */
@@ -740,7 +818,7 @@
             <i class="fas fa-plus"></i>
             Create Project
         </button>
-    </div>>
+    </div>
 
     <!-- Dashboard Grid -->
     <div class="dashboard-grid">
@@ -831,6 +909,93 @@
 
         <!-- Right Column (1/3 width) -->
         <div class="right-column">
+            <!-- Journey Container stuff -->
+            <div class="journey-container">
+                <div class="journey-title">Your Improvement Journey</div>
+
+                <div class="step-container" data-step="0">
+                    <div class="step-icon-line">
+                        <div class="step-icon active">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="step-line active"></div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title active">1. New Submission</div>
+                        <div class="step-description">Share your improvement ideas here!</div>
+                    </div>
+                </div>
+
+                <div class="step-container" data-step="1">
+                    <div class="step-icon-line">
+                        <div class="step-icon inactive">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="step-line inactive"></div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title inactive">2. Prioritisation</div>
+                        <div class="step-description hidden">Ideas are reviewed and prioritized quarterly.</div>
+                    </div>
+                </div>
+
+                <div class="step-container" data-step="2">
+                    <div class="step-icon-line">
+                        <div class="step-icon inactive">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="step-line inactive"></div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title inactive">3. Scoping</div>
+                        <div class="step-description hidden">Planning the implementation details.</div>
+                    </div>
+                </div>
+
+                <div class="step-container" data-step="3">
+                    <div class="step-icon-line">
+                        <div class="step-icon inactive">
+                            <i class="fas fa-forward"></i>
+                        </div>
+                        <div class="step-line inactive"></div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title inactive">4. In Progress</div>
+                        <div class="step-description hidden">Your improvement is being implemented.</div>
+                    </div>
+                </div>
+
+                <div class="step-container" data-step="4">
+                    <div class="step-icon-line">
+                        <div class="step-icon inactive">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <div class="step-line inactive"></div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title inactive">5. Operational</div>
+                        <div class="step-description hidden">The improvement is live and being monitored.</div>
+                    </div>
+                </div>
+
+                <div class="step-container" data-step="5">
+                    <div class="step-icon-line">
+                        <div class="step-icon inactive">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title inactive">6. Completed</div>
+                        <div class="step-description hidden">Successfully implemented and verified!</div>
+                    </div>
+                </div>
+
+                <div class="journey-note">
+                    <i class="fas fa-pause"></i>
+                    <div class="journey-note-text">Note: Improvements may be paused if they need additional input or review.</div>
+                </div>
+            </div>
+
             <!-- Overview Items -->
             <div class="overview-grid">
                 <div class="overview-item">
@@ -865,14 +1030,6 @@
                 </div>
             </div>
 
-            <!-- Add Project -->
-            <div class="add-project-container">
-                <div class="add-icon">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <div class="add-title">Add New Project</div>
-                <button class="add-btn">Create Project</button>
-            </div>
 
             <!-- Today's Tasks -->
             <div class="tasks-container">
@@ -986,6 +1143,64 @@
         }
     }
 
+    class JourneyStepper {
+        constructor() {
+            this.activeStep = 0;
+            this.initStepperEvents();
+        }
+
+        initStepperEvents() {
+            const stepContainers = document.querySelectorAll('.step-container');
+            stepContainers.forEach((container, index) => {
+                container.addEventListener('click', () => {
+                    this.setActiveStep(index);
+                });
+            });
+        }
+
+        setActiveStep(stepIndex) {
+            this.activeStep = stepIndex;
+            this.updateStepVisualStates();
+        }
+
+        updateStepVisualStates() {
+            const stepContainers = document.querySelectorAll('.step-container');
+
+            stepContainers.forEach((container, index) => {
+                const icon = container.querySelector('.step-icon');
+                const line = container.querySelector('.step-line');
+                const title = container.querySelector('.step-title');
+                const description = container.querySelector('.step-description');
+
+                if (index <= this.activeStep) {
+                    // Active state
+                    icon.classList.remove('inactive');
+                    icon.classList.add('active');
+                    title.classList.remove('inactive');
+                    title.classList.add('active');
+                    description.classList.remove('hidden');
+
+                    if (line) {
+                        line.classList.remove('inactive');
+                        line.classList.add('active');
+                    }
+                } else {
+                    // Inactive state
+                    icon.classList.remove('active');
+                    icon.classList.add('inactive');
+                    title.classList.remove('active');
+                    title.classList.add('inactive');
+                    description.classList.add('hidden');
+
+                    if (line) {
+                        line.classList.remove('active');
+                        line.classList.add('inactive');
+                    }
+                }
+            });
+        }
+    }
+
     // Initialize donut charts
     document.addEventListener('DOMContentLoaded', function() {
         // New Projects Chart
@@ -1067,7 +1282,7 @@
         });
 
         // Simple interactions
-        document.querySelector('.add-btn').addEventListener('click', function() {
+        document.querySelector('.create-project-btn').addEventListener('click', function() {
             alert('Opening project creation form');
         });
 
@@ -1077,7 +1292,11 @@
                 alert(`Navigating to ${label} section`);
             });
         });
+
+        // Initialize stepper
+        new JourneyStepper();
     });
+
     // New Gantt Chart Calculations
     document.addEventListener('DOMContentLoaded', function() {
         // Calculate positions for gantt bars
@@ -1106,6 +1325,7 @@
             bar.querySelector('.gantt-progress').style.width = pos.progress;
         });
     });
+
     new SidebarManager();
 </script>
 </body>
