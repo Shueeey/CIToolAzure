@@ -303,6 +303,11 @@ router.get('/report', function(req, res, next) {
 router.get('/index', function(req, res, next) {
   res.render('index'); // This will render views/index.ejs
 });
+
+router.get('/dashboard', function(req, res, next) {
+  res.render('dashboard'); // This will render views/dashboard.ejs
+});
+
 /* API endpoint to get unique values for filtering */
 router.get('/api/filter-options', async function(req, res, next) {
   try {

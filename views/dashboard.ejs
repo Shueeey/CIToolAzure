@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333333;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background-color: #ffffff;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-left: 200px; /* Account for sidebar width */
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .board-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-header {
+            position: relative;
+        }
+
+        .search-header input {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 8px 12px 8px 35px;
+            color: #333333;
+            font-size: 14px;
+            width: 300px;
+        }
+
+        .search-header input::placeholder {
+            color: #6c757d;
+        }
+
+        .search-header input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        .view-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .total-count {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* Enhanced Sidebar */
+        .sidebar {
+            width: 200px;
+            background-color: #ffffff;
+            border-right: 1px solid #e9ecef;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px 0;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Logo section in sidebar */
+        .sidebar-logo {
+            padding: 0 15px 25px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333333;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(45deg, #ff6b35 0%, #e64626 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Menu sections */
+        .menu-section {
+            margin-bottom: 30px;
+        }
+
+        .menu-title {
+            text-transform: uppercase;
+            font-size: 11px;
+            padding: 0 15px 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+        }
+
+        .nav-menu {
+            padding: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 2px 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: #f0f2f5;
+            color: #333333;
+        }
+
+        .nav-item.active {
+            background-color: #ff6b35;
+            color: white;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background-color: #ff6b35;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 200px; /* Account for sidebar width */
+            padding: 20px;
+            overflow: auto;
+            background-color: #f8f9fa;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Project Summary */
+        .project-summary {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            grid-column: 1 / -1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .summary-text {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        /* Project States */
+        .project-states {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            height: 33vh;
+        }
+
+        .state-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            position: relative;
+        }
+
+        .state-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .state-count {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .state-count.new { color: #ff6b35; }
+        .state-count.in-progress { color: #ff6b35; }
+        .state-count.completed { color: #e64626; }
+
+        .chart-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+        }
+
+        /* New Gantt Chart Styles */
+        .gantt-header-row {
+            display: flex;
+            margin-left: 200px;
+            border-bottom: 1px solid #e5e7eb;
+            background-color: white;
+        }
+
+        .gantt-month {
+            flex-grow: 1;
+            padding: 4px;
+            text-align: center;
+            border-right: 1px solid #e5e7eb;
+            font-size: 12px;
+        }
+
+        .gantt-rows {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 12px;
+            width: 100%;
+            background-color: white;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .gantt-task-name {
+            text-align: right;
+            padding-right: 8px;
+            line-height: 30px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color: white;
+        }
+
+        .gantt-bar-container {
+            position: relative;
+            background: #f0f0f0;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        .gantt-bar {
+            height: 20px;
+            margin-top: 5px;
+            border-radius: 4px;
+            position: absolute;
+            background: #e64626;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .gantt-progress {
+            height: 100%;
+            background: #e64626;
+            border-radius: 4px 0 0 4px;
+        }
+
+        /* Right Column */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Overview Cards */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .overview-item {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .overview-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .overview-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #ff6b35 0%, #e64626 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .overview-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333333;
+            text-align: left;
+            flex: 1;
+        }
+
+        /* Add Project */
+        .add-project-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .add-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff6b35 0%, #e64626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .add-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .add-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+
+        /* Today's Tasks */
+        .tasks-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-date {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .task-item {
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f8f9fa;
+        }
+
+        .task-item:hover {
+            border-color: #ff6b35;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333333;
+        }
+
+        .task-project {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .task-priority {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .priority-high {
+            background-color: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-states {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar-logo span {
+                display: none;
+            }
+
+            .menu-title {
+                display: none;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .nav-item {
+                justify-content: center;
+                padding: 15px;
+                margin: 2px 5px;
+            }
+
+            .header {
+                margin-left: 70px;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .search-header input {
+                width: 200px;
+            }
+        }
+        @media (max-width: 768px) {
+            .gantt-header-row {
+                margin-left: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">SSC</div>
+        <span>Continuous Improvement</span>
+    </div>
+
+    <div class="menu-section">
+        <div class="menu-title">Main Menu</div>
+        <nav class="nav-menu">
+            <a href="/dashboard" class="nav-item">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-lightbulb"></i>
+                <span>My Ideas</span>
+            </a>
+            <a href="/index" class="nav-item">
+                <i class="fas fa-columns"></i>
+                <span>All Ideas</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="menu-section">
+        <div class="menu-title">Projects</div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">
+                <i class="fas fa-folder-open"></i>
+                <span>Projects</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>Knowledge Base</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Teams</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="menu-section">
+        <div class="menu-title">Tools</div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add New Idea</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+    <div class="logo-section">
+        <div class="breadcrumb">
+            <span>Dashboard</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>Overview</span>
+        </div>
+        <div class="board-title">Project Dashboard</div>
+    </div>
+
+    <div class="header-controls">
+        <div class="search-header">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" placeholder="Search projects...">
+        </div>
+        <div class="view-controls">
+            <span>View:</span>
+            <select class="filter-select">
+                <option>All Projects</option>
+                <option>My Projects</option>
+            </select>
+        </div>
+        <div class="total-count">87 Projects</div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Project Summary -->
+    <div class="project-summary">
+        <div class="summary-title">Project Summary</div>
+        <div class="summary-text">Add new project and manage all projects in one place.</div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Left Column (2/3 width) -->
+        <div class="left-column">
+            <!-- Project States with Donut Charts -->
+            <div class="project-states">
+                <div class="state-card">
+                    <div class="state-title">New Projects</div>
+                    <div class="state-count new">40</div>
+                    <div class="chart-container">
+                        <canvas id="newChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="state-card">
+                    <div class="state-title">In Progress</div>
+                    <div class="state-count in-progress">87</div>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="state-card">
+                    <div class="state-title">Completed</div>
+                    <div class="state-count completed">102</div>
+                    <div class="chart-container">
+                        <canvas id="completedChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Gantt Chart Implementation -->
+            <div class="gantt-container">
+                <div class="gantt-header">
+                    <div class="gantt-title">Project Timeline</div>
+                    <div class="gantt-subtitle">Progress Overview</div>
+                </div>
+
+                <!-- Month Header -->
+                <div class="gantt-header-row">
+                    <div class="gantt-month">Aug</div>
+                    <div class="gantt-month">Sep</div>
+                    <div class="gantt-month">Oct</div>
+                    <div class="gantt-month">Nov</div>
+                    <div class="gantt-month">Dec</div>
+                </div>
+
+                <!-- Gantt Rows -->
+                <div class="gantt-rows">
+                    <div class="gantt-task-name">Dashboard Redesign</div>
+                    <div class="gantt-bar-container">
+                        <div class="gantt-bar" style="left: 0%; width: 75%;">
+                            <div class="gantt-progress" style="width: 75%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-task-name">Mobile App Development</div>
+                    <div class="gantt-bar-container">
+                        <div class="gantt-bar" style="left: 15%; width: 65%;">
+                            <div class="gantt-progress" style="width: 45%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-task-name">API Integration</div>
+                    <div class="gantt-bar-container">
+                        <div class="gantt-bar" style="left: 5%; width: 30%;">
+                            <div class="gantt-progress" style="width: 90%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-task-name">User Testing</div>
+                    <div class="gantt-bar-container">
+                        <div class="gantt-bar" style="left: 35%; width: 40%;">
+                            <div class="gantt-progress" style="width: 30%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-task-name">Security Audit</div>
+                    <div class="gantt-bar-container">
+                        <div class="gantt-bar" style="left: 10%; width: 50%;">
+                            <div class="gantt-progress" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (1/3 width) -->
+        <div class="right-column">
+            <!-- Overview Items -->
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <div class="overview-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="overview-label">Project</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="overview-label">Activity</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="overview-label">Messages</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="overview-label">Members</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="overview-label">Calendar</div>
+                </div>
+            </div>
+
+            <!-- Add Project -->
+            <div class="add-project-container">
+                <div class="add-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="add-title">Add New Project</div>
+                <button class="add-btn">Create Project</button>
+            </div>
+
+            <!-- Today's Tasks -->
+            <div class="tasks-container">
+                <div class="task-header">
+                    <div class="gantt-title">Today's Tasks</div>
+                    <div class="task-date">Fri 29 July 2022</div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-title">Meeting with client</div>
+                    <div class="task-project">Redesign internal project dashboard</div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-title">Create design system</div>
+                    <div class="task-project">Crypto wallet project</div>
+                    <div class="task-priority priority-high">High Priority</div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-title">User research (interview)</div>
+                    <div class="task-project">E-learning mobile apps development</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    class SidebarManager {
+        constructor() {
+            this.initSidebarEvents();
+        }
+
+        initSidebarEvents() {
+            // Menu item selection with smooth transitions
+            const menuItems = document.querySelectorAll('.nav-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Only prevent default if it's a placeholder link (#)
+                    if (item.getAttribute('href') === '#') {
+                        e.preventDefault();
+                    }
+
+                    menuItems.forEach(i => i.classList.remove('active')); // removes active from all items
+
+                    item.classList.add('active'); // for active click animation
+
+                    this.createRippleEffect(item, e); //for ripple effect
+
+
+                });
+
+                // Enhanced hover effects
+                item.addEventListener('mouseenter', () => {
+                    if (!item.classList.contains('active')) {
+                        item.style.transform = 'translateX(3px)';
+                    }
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    if (!item.classList.contains('active')) {
+                        item.style.transform = 'translateX(0)';
+                    }
+                });
+            });
+        }
+
+        createRippleEffect(element, event) {
+            const rect = element.getBoundingClientRect();
+            const size = 60;
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+
+            const ripple = document.createElement('span');
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                left: ${x}px;
+                top: ${y}px;
+                pointer-events: none;
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+            `;
+
+            // Add ripple animation CSS if not already present
+            if (!document.querySelector('#ripple-styles')) {
+                const style = document.createElement('style');
+                style.id = 'ripple-styles';
+                style.textContent = `
+                    @keyframes ripple {
+                        to {
+                            transform: scale(2);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+    }
+
+    // Initialize donut charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // New Projects Chart
+        const newCtx = document.getElementById('newChart').getContext('2d');
+        const newChart = new Chart(newCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [40, 60],
+                    backgroundColor: ['#ff6b35', '#e9ecef'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+
+        // In Progress Chart
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+        const progressChart = new Chart(progressCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [87, 13],
+                    backgroundColor: ['#ff6b35', '#e9ecef'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+
+        // Completed Chart
+        const completedCtx = document.getElementById('completedChart').getContext('2d');
+        const completedChart = new Chart(completedCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [102, 38],
+                    backgroundColor: ['#e64626', '#e9ecef'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+
+        // Simple interactions
+        document.querySelector('.add-btn').addEventListener('click', function() {
+            alert('Opening project creation form');
+        });
+
+        document.querySelectorAll('.overview-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const label = this.querySelector('.overview-label').textContent;
+                alert(`Navigating to ${label} section`);
+            });
+        });
+    });
+    // New Gantt Chart Calculations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Calculate positions for gantt bars
+        const calculateBarPosition = (startOffset, duration, progress) => {
+            return {
+                left: `${startOffset}%`,
+                width: `${duration}%`,
+                progress: `${progress}%`
+            };
+        };
+
+        // Set bar positions
+        const bars = document.querySelectorAll('.gantt-bar');
+        const positions = [
+            calculateBarPosition(0, 75, 75),
+            calculateBarPosition(15, 65, 45),
+            calculateBarPosition(5, 30, 90),
+            calculateBarPosition(35, 40, 30),
+            calculateBarPosition(10, 50, 60)
+        ];
+
+        bars.forEach((bar, index) => {
+            const pos = positions[index];
+            bar.style.left = pos.left;
+            bar.style.width = pos.width;
+            bar.querySelector('.gantt-progress').style.width = pos.progress;
+        });
+    });
+</script>
+</body>
+</html>
