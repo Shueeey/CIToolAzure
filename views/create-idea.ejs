@@ -29,7 +29,7 @@
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
-            padding: 80px 20px 40px;
+            padding: 10px 20px 40px;
         }
 
         /* Scroll indicator */
@@ -439,30 +439,6 @@
             animation: slideDown 0.5s ease-out;
         }
 
-        /* API Status Indicator */
-        .api-status {
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .api-status.online {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .api-status.offline {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .api-status.testing {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
         /* Required field indicator */
         .required {
             color: #dc3545;
@@ -498,6 +474,7 @@
                 right: 15px;
             }
 
+
             .scroll-progress-track {
                 height: 150px;
                 width: 3px;
@@ -525,13 +502,6 @@
         <i class="fas fa-arrow-left"></i>
     </button>
 
-    <!-- Scroll progress indicator -->
-    <div class="scroll-progress-container" id="scrollProgress">
-        <div class="scroll-progress-track">
-            <div class="scroll-progress-bar" id="scrollProgressBar"></div>
-        </div>
-    </div>
-
     <!-- Main form container -->
     <div class="form-container" id="formContainer">
         <!-- Success message -->
@@ -553,12 +523,6 @@
             </div>
             <h1 class="form-title">Tell us your idea</h1>
             <p class="form-subtitle">Share your improvement suggestion with the team</p>
-
-            <!-- API Status Indicator -->
-            <div class="api-status" id="apiStatus" style="margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; display: none;">
-                <i class="fas fa-circle" id="apiStatusIcon"></i>
-                <span id="apiStatusText">Checking API connection...</span>
-            </div>
         </div>
 
         <!-- Idea submission form -->
@@ -600,16 +564,14 @@
                     Which domain does this belong to? <span class="required">*</span>
                 </label>
                 <select id="ideaDomain" name="ideaDomain" class="form-input form-select" required>
-                    <option value="">Select a domain...</option>
-                    <option value="SSC">SSC (Shared Services Centre)</option>
-                    <option value="ICT">ICT (Information & Communication Technology)</option>
-                    <option value="Consulting">Consulting</option>
-                    <option value="Operations">Operations</option>
-                    <option value="Finance">Finance</option>
-                    <option value="HR">Human Resources</option>
-                    <option value="Legal">Legal</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="General">General</option>
+                    <option value="">Select a team...</option>
+                    <option value="SSC">SSC</option>
+                    <option value="ICT">ICT</option>
+                    <option value="Consulting">CONSULTING</option>
+                    <option value="Operations">OPS SUPPORT</option>
+                    <option value="SC">SC</option>
+                    <option value="T & E">T & E</option>
+                    <option value="MSR">MSR</option>
                 </select>
             </div>
 
@@ -662,180 +624,78 @@
     </div>
 </div>
 
-    <script>
-        // Global variables
-        let selectedFiles = [];
+<script>
+    // Global variables
+    let selectedFiles = [];
+    // Replace with your actual Power Automate endpoint
+    const POWER_AUTOMATE_ENDPOINT = 'https://prod-05.australiasoutheast.logic.azure.com:443/workflows/362497a64ee94acda35f09b62b21a95b/triggers/manual/paths/invoke?api-version=2016-06-01';
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeFileUpload();
-            initializeForm();
-            initializeScrollHints();
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeFileUpload();
+        initializeForm();
+    });
+
+    // Initialize file upload functionality
+    function initializeFileUpload() {
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        // Handle drag and drop
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
         });
 
-        // Initialize scroll hints and indicators
-        function initializeScrollHints() {
-            const scrollProgress = document.getElementById('scrollProgress');
-            const scrollProgressBar = document.getElementById('scrollProgressBar');
-            const formContainer = document.getElementById('formContainer');
-            let pulseTimeout;
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
 
-            // Check if page needs scrolling and update progress
-            function updateScrollProgress() {
-                const scrollTop = window.scrollY;
-                const windowHeight = window.innerHeight;
-                const documentHeight = document.documentElement.scrollHeight;
-                const isScrollable = documentHeight > windowHeight;
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            handleFileSelection(files);
+        });
 
-                if (isScrollable) {
-                    // Show progress indicator
-                    scrollProgress.classList.add('visible');
-                    formContainer.classList.add('scrollable');
+        // Handle file input change
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFileSelection(files);
+        });
+    }
 
-                    // Calculate scroll progress
-                    const scrollableDistance = documentHeight - windowHeight;
-                    const scrollPercentage = Math.min((scrollTop / scrollableDistance) * 100, 100);
-
-                    // Update progress bar
-                    scrollProgressBar.style.height = scrollPercentage + '%';
-
-                    // Add pulse effect initially, remove after first scroll
-                    if (scrollTop < 50 && !scrollProgress.classList.contains('pulse')) {
-                        scrollProgress.classList.add('pulse');
-
-                        // Remove pulse after 4 seconds or on first scroll
-                        clearTimeout(pulseTimeout);
-                        pulseTimeout = setTimeout(() => {
-                            scrollProgress.classList.remove('pulse');
-                        }, 4000);
-                    } else if (scrollTop >= 50) {
-                        scrollProgress.classList.remove('pulse');
-                        clearTimeout(pulseTimeout);
-                    }
-                } else {
-                    // Hide progress indicator if page doesn't need scrolling
-                    scrollProgress.classList.remove('visible');
-                    formContainer.classList.remove('scrollable');
-                }
+    // Handle file selection
+    function handleFileSelection(files) {
+        files.forEach(file => {
+            // Check file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                showError(`File "${file.name}" is too large. Maximum size is 10MB.`);
+                return;
             }
 
-            // Initial check
-            setTimeout(updateScrollProgress, 100); // Small delay to ensure proper layout
-
-            // Listen for scroll events
-            window.addEventListener('scroll', updateScrollProgress);
-            window.addEventListener('resize', () => {
-                setTimeout(updateScrollProgress, 100);
-            });
-
-            // Remove pulse on form interaction
-            const formInputs = document.querySelectorAll('input, textarea, select');
-            formInputs.forEach(input => {
-                input.addEventListener('focus', () => {
-                    scrollProgress.classList.remove('pulse');
-                    clearTimeout(pulseTimeout);
-                });
-            });
-
-            // Optional: Click progress bar to scroll to that position
-            scrollProgress.addEventListener('click', (e) => {
-                const rect = scrollProgress.getBoundingClientRect();
-                const clickY = e.clientY - rect.top;
-                const progressHeight = rect.height;
-                const clickPercentage = clickY / progressHeight;
-
-                const documentHeight = document.documentElement.scrollHeight;
-                const windowHeight = window.innerHeight;
-                const scrollableDistance = documentHeight - windowHeight;
-                const targetScroll = scrollableDistance * clickPercentage;
-
-                window.scrollTo({
-                    top: targetScroll,
-                    behavior: 'smooth'
-                });
-            });
-        }
-
-        // Generate decorative lightbulb pattern
-        function generateLightbulbPattern() {
-            const pattern = document.getElementById('lightbulbPattern');
-            const lightbulbCount = 20;
-
-            for (let i = 0; i < lightbulbCount; i++) {
-                const lightbulb = document.createElement('div');
-                lightbulb.className = 'lightbulb';
-                lightbulb.innerHTML = '<i class="fas fa-lightbulb"></i>';
-
-                // Random positioning
-                lightbulb.style.left = Math.random() * 100 + '%';
-                lightbulb.style.top = Math.random() * 100 + '%';
-                lightbulb.style.animationDelay = Math.random() * 6 + 's';
-                lightbulb.style.animationDuration = (4 + Math.random() * 4) + 's';
-
-                pattern.appendChild(lightbulb);
+            // Check if file already selected
+            if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                showError(`File "${file.name}" is already selected.`);
+                return;
             }
-        }
 
-        // Initialize file upload functionality
-        function initializeFileUpload() {
-            const fileUploadArea = document.getElementById('fileUploadArea');
-            const fileInput = document.getElementById('fileInput');
-            const fileList = document.getElementById('fileList');
+            selectedFiles.push(file);
+        });
 
-            // Handle drag and drop
-            fileUploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.add('dragover');
-            });
+        updateFileList();
+    }
 
-            fileUploadArea.addEventListener('dragleave', () => {
-                fileUploadArea.classList.remove('dragover');
-            });
+    // Update file list display
+    function updateFileList() {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
 
-            fileUploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.remove('dragover');
-                const files = Array.from(e.dataTransfer.files);
-                handleFileSelection(files);
-            });
-
-            // Handle file input change
-            fileInput.addEventListener('change', (e) => {
-                const files = Array.from(e.target.files);
-                handleFileSelection(files);
-            });
-        }
-
-        // Handle file selection
-        function handleFileSelection(files) {
-            files.forEach(file => {
-                // Check file size (10MB limit)
-                if (file.size > 10 * 1024 * 1024) {
-                    showError(`File "${file.name}" is too large. Maximum size is 10MB.`);
-                    return;
-                }
-
-                // Check if file already selected
-                if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-                    showError(`File "${file.name}" is already selected.`);
-                    return;
-                }
-
-                selectedFiles.push(file);
-            });
-
-            updateFileList();
-        }
-
-        // Update file list display
-        function updateFileList() {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-
-            selectedFiles.forEach((file, index) => {
-                const li = document.createElement('li');
-                li.className = 'file-item';
-                li.innerHTML = `
+        selectedFiles.forEach((file, index) => {
+            const li = document.createElement('li');
+            li.className = 'file-item';
+            li.innerHTML = `
                     <div class="file-item-info">
                         <i class="fas fa-file"></i>
                         <span>${file.name}</span>
@@ -845,143 +705,181 @@
                         <i class="fas fa-times"></i>
                     </button>
                 `;
-                fileList.appendChild(li);
+            fileList.appendChild(li);
+        });
+    }
+
+    // Remove file from selection
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        updateFileList();
+    }
+
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Initialize form functionality
+    function initializeForm() {
+        const form = document.getElementById('ideaForm');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await submitIdea();
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('ideaDescription');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
+
+    // Submit idea to database
+    async function submitIdea() {
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('ideaForm');
+
+        // Validate form
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+
+        try {
+            // Prepare form data (metadata only)
+            const formData = new FormData();
+            formData.append('title', document.getElementById('ideaName').value.trim());
+            formData.append('description', document.getElementById('ideaDescription').value.trim());
+            formData.append('domain', document.getElementById('ideaDomain').value);
+            // formData.append('submittedBy', document.getElementById('submitterName').value.trim());
+            formData.append('dateSubmitted', new Date().toISOString());
+
+            // Submit metadata to API
+            const response = await fetch('/api/ideas', {
+                method: 'POST',
+                body: formData
             });
-        }
 
-        // Remove file from selection
-        function removeFile(index) {
-            selectedFiles.splice(index, 1);
-            updateFileList();
-        }
+            const result = await response.json();
 
-        // Format file size
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+            if (response.ok && result.success) {
+                const ideaId = result.ideaId;
 
-        // Initialize form functionality
-        function initializeForm() {
-            const form = document.getElementById('ideaForm');
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await submitIdea();
-            });
-
-            // Auto-resize textarea
-            const textarea = document.getElementById('ideaDescription');
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = this.scrollHeight + 'px';
-            });
-        }
-
-        // Submit idea to database
-        async function submitIdea() {
-            const submitBtn = document.getElementById('submitBtn');
-            const form = document.getElementById('ideaForm');
-
-            // Validate form
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
-
-            try {
-                // Prepare form data
-                const formData = new FormData();
-                formData.append('title', document.getElementById('ideaName').value.trim());
-                formData.append('description', document.getElementById('ideaDescription').value.trim());
-                formData.append('domain', document.getElementById('ideaDomain').value);
-                formData.append('submittedBy', document.getElementById('submitterName').value.trim());
-                formData.append('dateSubmitted', new Date().toISOString());
-
-                // Add files if any
-                selectedFiles.forEach((file, index) => {
-                    formData.append(`attachment_${index}`, file);
-                });
-
-                // Submit to API
-                const response = await fetch('/api/ideas', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showSuccess();
-                    setTimeout(() => {
-                        goBack();
-                    }, 2000);
-                } else {
-                    throw new Error(result.error || 'Failed to submit idea');
+                // Upload attachments to SharePoint if any
+                if (selectedFiles.length > 0) {
+                    await uploadAttachmentsToSharePoint(ideaId);
                 }
 
-            } catch (error) {
-                console.error('Error submitting idea:', error);
-                showError(error.message || 'Failed to submit idea. Please try again.');
-            } finally {
-                // Reset button state
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
-            }
-        }
-
-        // Show success message
-        function showSuccess() {
-            hideMessages();
-            const successMessage = document.getElementById('successMessage');
-            successMessage.classList.add('show');
-            successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        // Show error message
-        function showError(message) {
-            hideMessages();
-            const errorMessage = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
-            errorText.textContent = message;
-            errorMessage.classList.add('show');
-            errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        // Hide all messages
-        function hideMessages() {
-            document.getElementById('successMessage').classList.remove('show');
-            document.getElementById('errorMessage').classList.remove('show');
-        }
-
-        // Go back to previous page
-        function goBack() {
-            // Check if there's a referrer, otherwise go to dashboard
-            if (document.referrer && document.referrer.includes(window.location.origin)) {
-                window.history.back();
+                showSuccess();
+                setTimeout(() => {
+                    goBack();
+                }, 2000);
             } else {
-                window.location.href = '/dashboard';
+                throw new Error(result.error || 'Failed to submit idea');
+            }
+
+        } catch (error) {
+            console.error('Error submitting idea:', error);
+            showError(error.message || 'Failed to submit idea. Please try again.');
+        } finally {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+        }
+    }
+
+    // Upload attachments to SharePoint via Power Automate
+    async function uploadAttachmentsToSharePoint(ideaId) {
+        const errors = [];
+
+        for (const file of selectedFiles) {
+            try {
+                // Convert file to base64
+                const base64Data = await toBase64(file);
+
+                // Prepare payload for Power Automate
+                const payload = {
+                    ideaId: ideaId,
+                    fileName: file.name,
+                    fileContent: base64Data.split(',')[1] // Remove data URL prefix
+                };
+
+                // Send to Power Automate
+                const response = await fetch(POWER_AUTOMATE_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                errors.push(`File ${file.name}: ${error.message}`);
             }
         }
 
-        // Auto-hide messages after 5 seconds
-        setInterval(() => {
-            const messages = document.querySelectorAll('.success-message.show, .error-message.show');
-            messages.forEach(message => {
-                if (message.classList.contains('show')) {
-                    setTimeout(() => {
-                        message.classList.remove('show');
-                    }, 5000);
-                }
-            });
-        }, 5000);
-    </script>
+        if (errors.length > 0) {
+            showError('Idea submitted but some attachments failed: ' + errors.join(', '));
+        }
+    }
+
+    // Convert file to base64
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    // Show success message
+    function showSuccess() {
+        hideMessages();
+        const successMessage = document.getElementById('successMessage');
+        successMessage.classList.add('show');
+        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Show error message
+    function showError(message) {
+        hideMessages();
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        errorText.textContent = message;
+        errorMessage.classList.add('show');
+        errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Hide all messages
+    function hideMessages() {
+        document.getElementById('successMessage').classList.remove('show');
+        document.getElementById('errorMessage').classList.remove('show');
+    }
+
+    // Go back to previous page
+    function goBack() {
+        // Check if there's a referrer, otherwise go to dashboard
+        if (document.referrer && document.referrer.includes(window.location.origin)) {
+            window.history.back();
+        } else {
+            window.location.href = '/dashboard';
+        }
+    }
+</script>
 </body>
 </html>
