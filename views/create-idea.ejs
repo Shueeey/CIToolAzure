@@ -16,11 +16,55 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 20px 0;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Container wrapper for proper scrolling */
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 10px 20px 40px;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 107, 53, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: bounce 2s infinite;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .scroll-indicator.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
         }
 
         /* Decorative lightbulbs background */
@@ -80,10 +124,49 @@
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            width: 90%;
+            width: 100%;
             max-width: 600px;
             position: relative;
             animation: slideUp 0.6s ease-out;
+            margin: 0 auto;
+            max-height: none;
+        }
+
+        /* Content overflow hints */
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, transparent 100%);
+            border-radius: 20px 20px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-container.show-top-shadow::before {
+            opacity: 1;
+        }
+
+        .form-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.05) 0%, transparent 100%);
+            border-radius: 0 0 20px 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-container.show-bottom-shadow::after {
+            opacity: 1;
         }
 
         @keyframes slideUp {
@@ -363,9 +446,13 @@
 
         /* Responsive design */
         @media (max-width: 768px) {
+            .page-wrapper {
+                padding: 60px 15px 20px;
+            }
+
             .form-container {
                 padding: 30px 20px;
-                margin: 20px;
+                margin: 0;
             }
 
             .form-actions {
@@ -382,139 +469,168 @@
                 width: 45px;
                 height: 45px;
             }
+
+            .scroll-progress-container {
+                right: 15px;
+            }
+
+
+            .scroll-progress-track {
+                height: 150px;
+                width: 3px;
+            }
+        }
+
+        @media (max-height: 800px) {
+            .scroll-progress-container {
+                display: block;
+            }
+        }
+
+        @media (min-height: 1000px) {
+            .scroll-progress-track {
+                height: 250px;
+            }
         }
     </style>
 </head>
 <body>
-<!-- Decorative lightbulbs -->
-<div class="lightbulb-pattern" id="lightbulbPattern"></div>
+<!-- Page wrapper for proper scrolling -->
+<div class="page-wrapper">
+    <!-- Back button -->
+    <button class="back-button" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
 
-<!-- Back button -->
-<button class="back-button" onclick="goBack()">
-    <i class="fas fa-arrow-left"></i>
-</button>
-
-<!-- Main form container -->
-<div class="form-container">
-    <!-- Success message -->
-    <div class="success-message" id="successMessage">
-        <i class="fas fa-check-circle"></i>
-        <strong>Success!</strong> Your idea has been submitted successfully.
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress-container" id="scrollProgress">
+        <div class="scroll-progress-track">
+            <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+        </div>
     </div>
 
-    <!-- Error message -->
-    <div class="error-message" id="errorMessage">
-        <i class="fas fa-exclamation-triangle"></i>
-        <strong>Error!</strong> <span id="errorText">Something went wrong. Please try again.</span>
-    </div>
-
-    <!-- Form header -->
-    <div class="form-header">
-        <div class="lightbulb-icon">
-            <i class="fas fa-lightbulb"></i>
-        </div>
-        <h1 class="form-title">Tell us your idea</h1>
-        <p class="form-subtitle">Share your improvement suggestion with the team</p>
-    </div>
-
-    <!-- Idea submission form -->
-    <form id="ideaForm">
-        <!-- Idea name -->
-        <div class="form-group">
-            <label class="form-label" for="ideaName">
-                Name your idea <span class="required">*</span>
-            </label>
-            <input
-                    type="text"
-                    id="ideaName"
-                    name="ideaName"
-                    class="form-input"
-                    placeholder="Enter a clear, descriptive title for your idea"
-                    required
-                    maxlength="200"
-            >
+    <!-- Main form container -->
+    <div class="form-container" id="formContainer">
+        <!-- Success message -->
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i>
+            <strong>Success!</strong> Your idea has been submitted successfully.
         </div>
 
-        <!-- Idea description -->
-        <div class="form-group">
-            <label class="form-label" for="ideaDescription">
-                Describe your idea <span class="required">*</span>
-            </label>
-            <textarea
-                    id="ideaDescription"
-                    name="ideaDescription"
-                    class="form-input form-textarea"
-                    placeholder="Provide details about your improvement idea, including the problem it solves and how it would benefit the organization"
-                    required
-                    maxlength="2000"
-            ></textarea>
+        <!-- Error message -->
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Error!</strong> <span id="errorText">Something went wrong. Please try again.</span>
         </div>
 
-        <!-- Domain selection -->
-        <div class="form-group">
-            <label class="form-label" for="ideaDomain">
-                Which domain does this belong to? <span class="required">*</span>
-            </label>
-            <select id="ideaDomain" name="ideaDomain" class="form-input form-select" required>
-                <option value="">Select a domain...</option>
-                <option value="SSC">SSC (Shared Services Centre)</option>
-                <option value="ICT">ICT (Information & Communication Technology)</option>
-                <option value="Consulting">Consulting</option>
-                <option value="Operations">Operations</option>
-                <option value="Finance">Finance</option>
-                <option value="HR">Human Resources</option>
-                <option value="Legal">Legal</option>
-                <option value="Marketing">Marketing</option>
-                <option value="General">General</option>
-            </select>
-        </div>
-
-        <!-- Submitter information -->
-        <div class="form-group">
-            <label class="form-label" for="submitterName">
-                Your name <span class="required">*</span>
-            </label>
-            <input
-                    type="text"
-                    id="submitterName"
-                    name="submitterName"
-                    class="form-input"
-                    placeholder="Enter your full name"
-                    required
-                    maxlength="100"
-            >
-        </div>
-
-        <!-- File attachment -->
-        <div class="form-group">
-            <label class="form-label">
-                Attach file (optional)
-            </label>
-            <div class="file-upload-area" id="fileUploadArea">
-                <input type="file" id="fileInput" name="attachment" class="file-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png">
-                <div class="file-upload-icon">
-                    <i class="fas fa-paperclip"></i>
-                </div>
-                <div class="file-upload-text">
-                    Click to upload files or drag and drop<br>
-                    <small>PDF, Word, Excel, PowerPoint, Images (Max 10MB each)</small>
-                </div>
+        <!-- Form header -->
+        <div class="form-header">
+            <div class="lightbulb-icon">
+                <i class="fas fa-lightbulb"></i>
             </div>
-            <ul class="file-list" id="fileList"></ul>
+            <h1 class="form-title">Tell us your idea</h1>
+            <p class="form-subtitle">Share your improvement suggestion with the team</p>
         </div>
 
-        <!-- Form actions -->
-        <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="goBack()">
-                <i class="fas fa-times"></i>
-                Cancel
-            </button>
-            <button type="submit" class="btn btn-primary" id="submitBtn">
-                <i class="fas fa-paper-plane"></i>
-                Submit
-            </button>
-        </div>
-    </form>
+        <!-- Idea submission form -->
+        <form id="ideaForm">
+            <!-- Idea name -->
+            <div class="form-group">
+                <label class="form-label" for="ideaName">
+                    Name your idea <span class="required">*</span>
+                </label>
+                <input
+                        type="text"
+                        id="ideaName"
+                        name="ideaName"
+                        class="form-input"
+                        placeholder="Enter a clear, descriptive title for your idea"
+                        required
+                        maxlength="200"
+                >
+            </div>
+
+            <!-- Idea description -->
+            <div class="form-group">
+                <label class="form-label" for="ideaDescription">
+                    Describe your idea <span class="required">*</span>
+                </label>
+                <textarea
+                        id="ideaDescription"
+                        name="ideaDescription"
+                        class="form-input form-textarea"
+                        placeholder="Provide details about your improvement idea, including the problem it solves and how it would benefit the organization"
+                        required
+                        maxlength="2000"
+                ></textarea>
+            </div>
+
+            <!-- Domain selection -->
+            <div class="form-group">
+                <label class="form-label" for="ideaDomain">
+                    Which domain does this belong to? <span class="required">*</span>
+                </label>
+                <select id="ideaDomain" name="ideaDomain" class="form-input form-select" required>
+                    <option value="">Select a domain...</option>
+                    <option value="SSC">SSC (Shared Services Centre)</option>
+                    <option value="ICT">ICT (Information & Communication Technology)</option>
+                    <option value="Consulting">Consulting</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Finance">Finance</option>
+                    <option value="HR">Human Resources</option>
+                    <option value="Legal">Legal</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+
+            <!-- Submitter information -->
+            <div class="form-group">
+                <label class="form-label" for="submitterName">
+                    Your name <span class="required">*</span>
+                </label>
+                <input
+                        type="text"
+                        id="submitterName"
+                        name="submitterName"
+                        class="form-input"
+                        placeholder="Enter your full name"
+                        required
+                        maxlength="100"
+                >
+            </div>
+
+            <!-- File attachment -->
+            <div class="form-group">
+                <label class="form-label">
+                    Attach file (optional)
+                </label>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" id="fileInput" name="attachment" class="file-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png">
+                    <div class="file-upload-icon">
+                        <i class="fas fa-paperclip"></i>
+                    </div>
+                    <div class="file-upload-text">
+                        Click to upload files or drag and drop<br>
+                        <small>PDF, Word, Excel, PowerPoint, Images (Max 10MB each)</small>
+                    </div>
+                </div>
+                <ul class="file-list" id="fileList"></ul>
+            </div>
+
+            <!-- Form actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="goBack()">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -523,10 +639,93 @@
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
-        generateLightbulbPattern();
         initializeFileUpload();
         initializeForm();
+        initializeScrollHints();
     });
+
+    // Initialize scroll hints and indicators
+    function initializeScrollHints() {
+        const scrollProgress = document.getElementById('scrollProgress');
+        const scrollProgressBar = document.getElementById('scrollProgressBar');
+        const formContainer = document.getElementById('formContainer');
+        let pulseTimeout;
+
+        // Check if page needs scrolling and update progress
+        function updateScrollProgress() {
+            const scrollTop = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const isScrollable = documentHeight > windowHeight;
+
+            if (isScrollable) {
+                // Show progress indicator
+                scrollProgress.classList.add('visible');
+                formContainer.classList.add('scrollable');
+
+                // Calculate scroll progress
+                const scrollableDistance = documentHeight - windowHeight;
+                const scrollPercentage = Math.min((scrollTop / scrollableDistance) * 100, 100);
+
+                // Update progress bar
+                scrollProgressBar.style.height = scrollPercentage + '%';
+
+                // Add pulse effect initially, remove after first scroll
+                if (scrollTop < 50 && !scrollProgress.classList.contains('pulse')) {
+                    scrollProgress.classList.add('pulse');
+
+                    // Remove pulse after 4 seconds or on first scroll
+                    clearTimeout(pulseTimeout);
+                    pulseTimeout = setTimeout(() => {
+                        scrollProgress.classList.remove('pulse');
+                    }, 4000);
+                } else if (scrollTop >= 50) {
+                    scrollProgress.classList.remove('pulse');
+                    clearTimeout(pulseTimeout);
+                }
+            } else {
+                // Hide progress indicator if page doesn't need scrolling
+                scrollProgress.classList.remove('visible');
+                formContainer.classList.remove('scrollable');
+            }
+        }
+
+        // Initial check
+        setTimeout(updateScrollProgress, 100); // Small delay to ensure proper layout
+
+        // Listen for scroll events
+        window.addEventListener('scroll', updateScrollProgress);
+        window.addEventListener('resize', () => {
+            setTimeout(updateScrollProgress, 100);
+        });
+
+        // Remove pulse on form interaction
+        const formInputs = document.querySelectorAll('input, textarea, select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                scrollProgress.classList.remove('pulse');
+                clearTimeout(pulseTimeout);
+            });
+        });
+
+        // Optional: Click progress bar to scroll to that position
+        scrollProgress.addEventListener('click', (e) => {
+            const rect = scrollProgress.getBoundingClientRect();
+            const clickY = e.clientY - rect.top;
+            const progressHeight = rect.height;
+            const clickPercentage = clickY / progressHeight;
+
+            const documentHeight = document.documentElement.scrollHeight;
+            const windowHeight = window.innerHeight;
+            const scrollableDistance = documentHeight - windowHeight;
+            const targetScroll = scrollableDistance * clickPercentage;
+
+            window.scrollTo({
+                top: targetScroll,
+                behavior: 'smooth'
+            });
+        });
+    }
 
     // Generate decorative lightbulb pattern
     function generateLightbulbPattern() {
