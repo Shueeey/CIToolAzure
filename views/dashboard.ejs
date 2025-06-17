@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Management Dashboard</title>
+    <title>Idea Management Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -236,8 +236,8 @@
             margin-bottom: 20px;
         }
 
-        /* Project Summary */
-        .project-summary {
+        /* Idea Summary */
+        .Idea-summary {
             background-color: #ffffff;
             border-radius: 10px;
             padding: 15px;
@@ -266,7 +266,7 @@
             line-height: 1.5;
         }
 
-        .create-project-btn {
+        .create-Idea-btn {
             background: linear-gradient(45deg, #ff6b35 0%, #e64626 100%);
             color: white;
             border: none;
@@ -282,17 +282,17 @@
             box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
         }
 
-        .create-project-btn:hover {
+        .create-Idea-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
         }
 
-        .create-project-btn:active {
+        .create-Idea-btn:active {
             transform: translateY(0);
         }
 
-        /* Project States */
-        .project-states {
+        /* Idea States */
+        .Idea-states {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
@@ -643,7 +643,7 @@
             color: #333333;
         }
 
-        .task-project {
+        .task-Idea {
             font-size: 14px;
             color: #6c757d;
         }
@@ -667,7 +667,7 @@
                 grid-template-columns: 1fr;
             }
 
-            .project-states {
+            .Idea-states {
                 grid-template-columns: 1fr;
                 height: auto;
             }
@@ -768,11 +768,11 @@
     </div>
 
     <div class="menu-section">
-        <div class="menu-title">Projects</div>
+        <div class="menu-title">Ideas</div>
         <nav class="nav-menu">
             <a href="#" class="nav-item">
                 <i class="fas fa-folder-open"></i>
-                <span>Projects</span>
+                <span>Ideas</span>
             </a>
             <a href="#" class="nav-item">
                 <i class="fas fa-book"></i>
@@ -806,9 +806,8 @@
         <div class="breadcrumb">
             <span>Dashboard</span>
             <i class="fas fa-chevron-right"></i>
-            <span>Overview</span>
         </div>
-        <div class="board-title">Project Dashboard</div>
+        <div class="board-title">Ideas Dashboard</div>
     </div>
 
     <div class="header-controls">
@@ -833,15 +832,15 @@
 
 <!-- Main Content -->
 <div class="main-content">
-    <!-- Project Summary -->
-    <div class="project-summary">
+    <!-- Idea Summary -->
+    <div class="Idea-summary">
         <div class="summary-content">
-            <div class="summary-title">Project Summary</div>
-            <div class="summary-text">Add new project and manage all projects in one place.</div>
+            <div class="summary-title">Idea Summary</div>
+            <div class="summary-text">Add new Idea and manage all Ideas in one place.</div>
         </div>
-        <button class="create-project-btn">
+        <button class="create-Idea-btn">
             <i class="fas fa-plus"></i>
-            Create Project
+            Create Idea
         </button>
     </div>
 
@@ -849,10 +848,10 @@
     <div class="dashboard-grid">
         <!-- Left Column (2/3 width) -->
         <div class="left-column">
-            <!-- Project States with Donut Charts -->
-            <div class="project-states">
+            <!-- Idea States with Donut Charts -->
+            <div class="Idea-states">
                 <div class="state-card">
-                    <div class="state-title">New Projects</div>
+                    <div class="state-title">New Ideas</div>
                     <div class="state-count new">40</div>
                     <div class="chart-container">
                         <canvas id="newChart"></canvas>
@@ -1024,9 +1023,9 @@
             <div class="overview-grid">
                 <div class="overview-item">
                     <div class="overview-icon">
-                        <i class="fas fa-project-diagram"></i>
+                        <i class="fas fa-Idea-diagram"></i>
                     </div>
-                    <div class="overview-label">Project</div>
+                    <div class="overview-label">Idea</div>
                 </div>
                 <div class="overview-item">
                     <div class="overview-icon">
@@ -1064,18 +1063,18 @@
 
                 <div class="task-item">
                     <div class="task-title">Meeting with client</div>
-                    <div class="task-project">Redesign internal project dashboard</div>
+                    <div class="task-Idea">Redesign internal Idea dashboard</div>
                 </div>
 
                 <div class="task-item">
                     <div class="task-title">Create design system</div>
-                    <div class="task-project">Crypto wallet project</div>
+                    <div class="task-Idea">Crypto wallet Idea</div>
                     <div class="task-priority priority-high">High Priority</div>
                 </div>
 
                 <div class="task-item">
                     <div class="task-title">User research (interview)</div>
-                    <div class="task-project">E-learning mobile apps development</div>
+                    <div class="task-Idea">E-learning mobile apps development</div>
                 </div>
             </div>
         </div>
@@ -1227,7 +1226,7 @@
 
     // Initialize donut charts
     document.addEventListener('DOMContentLoaded', function() {
-        // New Projects Chart
+        // New Ideas Chart
         const newCtx = document.getElementById('newChart').getContext('2d');
         const newChart = new Chart(newCtx, {
             type: 'doughnut',
@@ -1306,8 +1305,8 @@
         });
 
         // Simple interactions
-        document.querySelector('.create-project-btn').addEventListener('click', function() {
-            alert('Opening project creation form');
+        document.querySelector('.create-Idea-btn').addEventListener('click', function() {
+            alert('Opening Idea creation form');
         });
 
         document.querySelectorAll('.overview-item').forEach(item => {
