@@ -78,7 +78,7 @@ router.get('/', async function(req, res, next) {
     dbStatus.error = err.message;
   }
 
-  res.render('index', {
+  res.render('dashboard', {
     title: 'SSC Continuous Improvement Dashboard',
     dbStatus: dbStatus
   });
