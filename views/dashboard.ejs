@@ -1437,8 +1437,8 @@
         const maxDate = new Date(Math.max(...dates));
 
         // Extend the range slightly for better visualization
-        const timelineStart = new Date(minDate.getFullYear(), minDate.getMonth() - 1, 1);
-        const timelineEnd = new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 0);
+        const timelineStart = new Date(minDate.getFullYear(), minDate.getMonth() - 2, 1);
+        const timelineEnd = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
 
         // Generate month list
         const months = [];
