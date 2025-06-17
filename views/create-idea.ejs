@@ -502,13 +502,6 @@
         <i class="fas fa-arrow-left"></i>
     </button>
 
-    <!-- Scroll progress indicator -->
-    <div class="scroll-progress-container" id="scrollProgress">
-        <div class="scroll-progress-track">
-            <div class="scroll-progress-bar" id="scrollProgressBar"></div>
-        </div>
-    </div>
-
     <!-- Main form container -->
     <div class="form-container" id="formContainer">
         <!-- Success message -->
@@ -634,116 +627,14 @@
 <script>
     // Global variables
     let selectedFiles = [];
+    // Replace with your actual Power Automate endpoint
+    const POWER_AUTOMATE_ENDPOINT = 'https://prod-05.australiasoutheast.logic.azure.com:443/workflows/362497a64ee94acda35f09b62b21a95b/triggers/manual/paths/invoke?api-version=2016-06-01';
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
         initializeFileUpload();
         initializeForm();
-        initializeScrollHints();
     });
-
-    // Initialize scroll hints and indicators
-    function initializeScrollHints() {
-        const scrollProgress = document.getElementById('scrollProgress');
-        const scrollProgressBar = document.getElementById('scrollProgressBar');
-        const formContainer = document.getElementById('formContainer');
-        let pulseTimeout;
-
-        // Check if page needs scrolling and update progress
-        function updateScrollProgress() {
-            const scrollTop = window.scrollY;
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight;
-            const isScrollable = documentHeight > windowHeight;
-
-            if (isScrollable) {
-                // Show progress indicator
-                scrollProgress.classList.add('visible');
-                formContainer.classList.add('scrollable');
-
-                // Calculate scroll progress
-                const scrollableDistance = documentHeight - windowHeight;
-                const scrollPercentage = Math.min((scrollTop / scrollableDistance) * 100, 100);
-
-                // Update progress bar
-                scrollProgressBar.style.height = scrollPercentage + '%';
-
-                // Add pulse effect initially, remove after first scroll
-                if (scrollTop < 50 && !scrollProgress.classList.contains('pulse')) {
-                    scrollProgress.classList.add('pulse');
-
-                    // Remove pulse after 4 seconds or on first scroll
-                    clearTimeout(pulseTimeout);
-                    pulseTimeout = setTimeout(() => {
-                        scrollProgress.classList.remove('pulse');
-                    }, 4000);
-                } else if (scrollTop >= 50) {
-                    scrollProgress.classList.remove('pulse');
-                    clearTimeout(pulseTimeout);
-                }
-            } else {
-                // Hide progress indicator if page doesn't need scrolling
-                scrollProgress.classList.remove('visible');
-                formContainer.classList.remove('scrollable');
-            }
-        }
-
-        // Initial check
-        setTimeout(updateScrollProgress, 100); // Small delay to ensure proper layout
-
-        // Listen for scroll events
-        window.addEventListener('scroll', updateScrollProgress);
-        window.addEventListener('resize', () => {
-            setTimeout(updateScrollProgress, 100);
-        });
-
-        // Remove pulse on form interaction
-        const formInputs = document.querySelectorAll('input, textarea, select');
-        formInputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                scrollProgress.classList.remove('pulse');
-                clearTimeout(pulseTimeout);
-            });
-        });
-
-        // Optional: Click progress bar to scroll to that position
-        scrollProgress.addEventListener('click', (e) => {
-            const rect = scrollProgress.getBoundingClientRect();
-            const clickY = e.clientY - rect.top;
-            const progressHeight = rect.height;
-            const clickPercentage = clickY / progressHeight;
-
-            const documentHeight = document.documentElement.scrollHeight;
-            const windowHeight = window.innerHeight;
-            const scrollableDistance = documentHeight - windowHeight;
-            const targetScroll = scrollableDistance * clickPercentage;
-
-            window.scrollTo({
-                top: targetScroll,
-                behavior: 'smooth'
-            });
-        });
-    }
-
-    // Generate decorative lightbulb pattern
-    function generateLightbulbPattern() {
-        const pattern = document.getElementById('lightbulbPattern');
-        const lightbulbCount = 20;
-
-        for (let i = 0; i < lightbulbCount; i++) {
-            const lightbulb = document.createElement('div');
-            lightbulb.className = 'lightbulb';
-            lightbulb.innerHTML = '<i class="fas fa-lightbulb"></i>';
-
-            // Random positioning
-            lightbulb.style.left = Math.random() * 100 + '%';
-            lightbulb.style.top = Math.random() * 100 + '%';
-            lightbulb.style.animationDelay = Math.random() * 6 + 's';
-            lightbulb.style.animationDuration = (4 + Math.random() * 4) + 's';
-
-            pattern.appendChild(lightbulb);
-        }
-    }
 
     // Initialize file upload functionality
     function initializeFileUpload() {
@@ -866,7 +757,7 @@
         submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
 
         try {
-            // Prepare form data
+            // Prepare form data (metadata only)
             const formData = new FormData();
             formData.append('title', document.getElementById('ideaName').value.trim());
             formData.append('description', document.getElementById('ideaDescription').value.trim());
@@ -874,12 +765,7 @@
             formData.append('submittedBy', document.getElementById('submitterName').value.trim());
             formData.append('dateSubmitted', new Date().toISOString());
 
-            // Add files if any
-            selectedFiles.forEach((file, index) => {
-                formData.append(`attachment_${index}`, file);
-            });
-
-            // Submit to API
+            // Submit metadata to API
             const response = await fetch('/api/ideas', {
                 method: 'POST',
                 body: formData
@@ -888,6 +774,13 @@
             const result = await response.json();
 
             if (response.ok && result.success) {
+                const ideaId = result.ideaId;
+
+                // Upload attachments to SharePoint if any
+                if (selectedFiles.length > 0) {
+                    await uploadAttachmentsToSharePoint(ideaId);
+                }
+
                 showSuccess();
                 setTimeout(() => {
                     goBack();
@@ -904,6 +797,54 @@
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
         }
+    }
+
+    // Upload attachments to SharePoint via Power Automate
+    async function uploadAttachmentsToSharePoint(ideaId) {
+        const errors = [];
+
+        for (const file of selectedFiles) {
+            try {
+                // Convert file to base64
+                const base64Data = await toBase64(file);
+
+                // Prepare payload for Power Automate
+                const payload = {
+                    ideaId: ideaId,
+                    fileName: file.name,
+                    fileContent: base64Data.split(',')[1] // Remove data URL prefix
+                };
+
+                // Send to Power Automate
+                const response = await fetch(POWER_AUTOMATE_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                errors.push(`File ${file.name}: ${error.message}`);
+            }
+        }
+
+        if (errors.length > 0) {
+            showError('Idea submitted but some attachments failed: ' + errors.join(', '));
+        }
+    }
+
+    // Convert file to base64
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
     }
 
     // Show success message
@@ -939,18 +880,6 @@
             window.location.href = '/dashboard';
         }
     }
-
-    // Auto-hide messages after 5 seconds
-    setInterval(() => {
-        const messages = document.querySelectorAll('.success-message.show, .error-message.show');
-        messages.forEach(message => {
-            if (message.classList.contains('show')) {
-                setTimeout(() => {
-                    message.classList.remove('show');
-                }, 5000);
-            }
-        });
-    }, 5000);
 </script>
 </body>
 </html>
