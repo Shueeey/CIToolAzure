@@ -1,15 +1,6 @@
 var express = require('express');
 var router = express.Router();
 const sql = require('mssql');
-const multer = require('multer');
-
-// Configure multer for file uploads (store in memory)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  }
-});
 
 // Database configuration
 const config = {
@@ -206,11 +197,10 @@ router.get('/api/ideas', async function(req, res, next) {
   }
 });
 
-/* API endpoint to CREATE a new idea (POST) */
-router.post('/api/ideas', upload.array('attachment'), async function(req, res, next) {
+/* API endpoint to CREATE a new idea (POST) - NO ATTACHMENTS */
+router.post('/api/ideas', async function(req, res, next) {
   console.log('=== POST /api/ideas DEBUG ===');
   console.log('Request body:', req.body);
-  console.log('Request files:', req.files ? req.files.length : 0);
   console.log('Request headers:', req.headers);
 
   try {
@@ -284,7 +274,7 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
       console.log('Checking IdeasList table structure...');
       const tableCheck = await pool.request().query(`
         SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, CHARACTER_MAXIMUM_LENGTH
-        FROM INFORMATION_SCHEMA.COLUMNS 
+        FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_NAME = 'IdeasList'
         ORDER BY ORDINAL_POSITION
       `);
@@ -327,32 +317,32 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
     // Insert the new idea and return the ID
     const insertQuery = `
       INSERT INTO IdeasList (
-        Title, 
-        Idea, 
-        Team, 
-        SubmittedBy, 
-        Date, 
-        State, 
-        New, 
-        Operational, 
+        Title,
+        Idea,
+        Team,
+        SubmittedBy,
+        Date,
+        State,
+        New,
+        Operational,
         Closed,
         Created_By,
         Item_Type
       )
-      OUTPUT INSERTED.ID
+        OUTPUT INSERTED.ID
       VALUES (
-        @title, 
-        @idea, 
-        @team, 
-        @submittedBy, 
-        @date, 
-        @state, 
-        @new, 
-        @operational, 
+        @title,
+        @idea,
+        @team,
+        @submittedBy,
+        @date,
+        @state,
+        @new,
+        @operational,
         @closed,
         @submittedBy,
         'Idea'
-      )
+        )
     `;
 
     console.log('Executing SQL insert query...');
@@ -369,21 +359,7 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
     const newIdeaId = result.recordset[0].ID;
     console.log('New idea created with ID:', newIdeaId);
 
-    // Handle file attachments if any
-    let attachmentInfo = null;
-    if (req.files && req.files.length > 0) {
-      console.log('Processing file attachments...');
-      // For now, just log the file info
-      // You can extend this to upload to SharePoint via Power Automate
-      attachmentInfo = req.files.map(file => ({
-        originalName: file.originalname,
-        size: file.size,
-        mimeType: file.mimetype
-      }));
-      console.log('Attachments received:', attachmentInfo);
-    }
-
-    // Return success response
+    // Return success response (no attachments)
     const successResponse = {
       success: true,
       message: 'Idea submitted successfully',
@@ -396,7 +372,6 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
         date: new Date(dateSubmitted || Date.now()),
         state: 'New'
       },
-      attachments: attachmentInfo,
       timestamp: new Date().toISOString()
     };
 
