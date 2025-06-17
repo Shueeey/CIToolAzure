@@ -72,8 +72,8 @@ router.get('/', async function(req, res, next) {
         Notes,
         Created_By,
         Item_Type
-      FROM IdeasList 
-      ORDER BY 
+      FROM IdeasList
+      ORDER BY
         CASE WHEN Date IS NOT NULL THEN Date ELSE '1900-01-01' END DESC,
         ID DESC
     `);
@@ -112,24 +112,24 @@ router.get('/api/db-status', async function(req, res, next) {
     // Get sample data with main columns
     const sampleData = await pool.request().query(`
       SELECT TOP 3 
-        ID, 
-        Title, 
-        State, 
-        Team,
-        Priority_Level,
-        SubmittedBy,
+        ID,
+        Title,
+             State,
+             Team,
+             Priority_Level,
+             SubmittedBy,
         Date,
         Lead,
         Operational,
         Closed
-      FROM IdeasList 
-      ORDER BY 
+      FROM IdeasList
+      ORDER BY
         CASE WHEN Date IS NOT NULL THEN Date ELSE '1900-01-01' END DESC
     `);
 
     // Get column information from database schema
     const schemaResult = await pool.request().query(`
-      SELECT 
+      SELECT
         COLUMN_NAME,
         DATA_TYPE,
         CHARACTER_MAXIMUM_LENGTH,
@@ -159,7 +159,7 @@ router.get('/api/ideas', async function(req, res, next) {
     await initializePool();
 
     const result = await pool.request().query(`
-      SELECT 
+      SELECT
         ID,
         Title,
         Date,
@@ -184,8 +184,8 @@ router.get('/api/ideas', async function(req, res, next) {
         Created_By,
         Item_Type,
         Path
-      FROM IdeasList 
-      ORDER BY 
+      FROM IdeasList
+      ORDER BY
         CASE WHEN Date IS NOT NULL THEN Date ELSE '1900-01-01' END DESC,
         ID DESC
     `);
@@ -211,44 +211,118 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
   console.log('=== POST /api/ideas DEBUG ===');
   console.log('Request body:', req.body);
   console.log('Request files:', req.files ? req.files.length : 0);
+  console.log('Request headers:', req.headers);
 
   try {
+    console.log('Attempting to initialize database pool...');
     await initializePool();
+    console.log('Database pool initialized successfully');
 
-    // Extract data from request body
+    // Extract data from request body - FIXED FIELD MAPPING
     const {
-      title,
-      description,
-      domain,
-      submittedBy,
+      title,           // From form field 'ideaName'
+      description,     // From form field 'ideaDescription'
+      domain,          // From form field 'ideaDomain'
+      submittedBy,     // From form field 'submitterName'
       dateSubmitted
     } = req.body;
 
-    // Validate required fields
-    if (!title || !description || !domain || !submittedBy) {
+    // Also try the actual form field names in case the mapping is wrong
+    const actualTitle = title || req.body.ideaName;
+    const actualDescription = description || req.body.ideaDescription;
+    const actualDomain = domain || req.body.ideaDomain;
+    const actualSubmittedBy = submittedBy || req.body.submitterName;
+
+    console.log('Extracted form data:', {
+      title: actualTitle ? actualTitle.substring(0, 50) + '...' : 'MISSING',
+      description: actualDescription ? actualDescription.substring(0, 50) + '...' : 'MISSING',
+      domain: actualDomain || 'MISSING',
+      submittedBy: actualSubmittedBy || 'MISSING',
+      dateSubmitted: dateSubmitted || 'MISSING'
+    });
+
+    console.log('All request body keys:', Object.keys(req.body));
+
+    // Validate required fields using actual values
+    if (!actualTitle || !actualDescription || !actualDomain || !actualSubmittedBy) {
       console.log('Validation failed - missing required fields');
+      console.log('Missing fields:', {
+        title: !actualTitle,
+        description: !actualDescription,
+        domain: !actualDomain,
+        submittedBy: !actualSubmittedBy
+      });
+      console.log('Full request body for debugging:', req.body);
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: title, description, domain, and submittedBy are required',
+        received: {
+          title: !!actualTitle,
+          description: !!actualDescription,
+          domain: !!actualDomain,
+          submittedBy: !!actualSubmittedBy
+        },
+        receivedFields: Object.keys(req.body),
         timestamp: new Date().toISOString()
       });
     }
 
-    console.log('Validated input data:', { title, description, domain, submittedBy });
+    console.log('Validation passed. Preparing database insertion...');
+
+    // Check if we can query the database first
+    try {
+      console.log('Testing database connection with simple query...');
+      const testResult = await pool.request().query('SELECT 1 as test');
+      console.log('Database test query successful:', testResult.recordset);
+    } catch (testErr) {
+      console.error('Database test query failed:', testErr);
+      throw new Error('Database connection test failed: ' + testErr.message);
+    }
+
+    // Check if IdeasList table exists and get its structure
+    try {
+      console.log('Checking IdeasList table structure...');
+      const tableCheck = await pool.request().query(`
+        SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, CHARACTER_MAXIMUM_LENGTH
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_NAME = 'IdeasList'
+        ORDER BY ORDINAL_POSITION
+      `);
+      console.log('IdeasList table columns:', tableCheck.recordset.map(col => ({
+        name: col.COLUMN_NAME,
+        type: col.DATA_TYPE,
+        nullable: col.IS_NULLABLE,
+        maxLength: col.CHARACTER_MAXIMUM_LENGTH
+      })));
+    } catch (tableErr) {
+      console.error('Error checking table structure:', tableErr);
+      throw new Error('Cannot access IdeasList table: ' + tableErr.message);
+    }
 
     // Prepare SQL query to insert new idea
     const request = pool.request();
 
-    // Add parameters to prevent SQL injection
-    request.input('title', sql.NVarChar(200), title.trim());
-    request.input('idea', sql.NVarChar(sql.MAX), description.trim());
-    request.input('team', sql.NVarChar(50), domain);
-    request.input('submittedBy', sql.NVarChar(100), submittedBy.trim());
+    // Add parameters to prevent SQL injection with proper length handling
+    const trimmedTitle = actualTitle.trim().substring(0, 200); // Ensure it fits
+    const trimmedSubmitter = actualSubmittedBy.trim().substring(0, 100);
+    const trimmedDomain = actualDomain.substring(0, 50);
+
+    request.input('title', sql.NVarChar(200), trimmedTitle);
+    request.input('idea', sql.NVarChar(sql.MAX), actualDescription.trim());
+    request.input('team', sql.NVarChar(50), trimmedDomain);
+    request.input('submittedBy', sql.NVarChar(100), trimmedSubmitter);
     request.input('date', sql.DateTime, new Date(dateSubmitted || Date.now()));
     request.input('state', sql.NVarChar(50), 'New'); // Default state for new ideas
     request.input('new', sql.Bit, 1); // Mark as new
     request.input('operational', sql.Bit, 0); // Default to false
     request.input('closed', sql.Bit, 0); // Default to false
+
+    console.log('SQL Parameters prepared:', {
+      title: trimmedTitle,
+      team: trimmedDomain,
+      submittedBy: trimmedSubmitter,
+      state: 'New'
+    });
 
     // Insert the new idea and return the ID
     const insertQuery = `
@@ -281,8 +355,16 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
       )
     `;
 
-    console.log('Executing SQL query...');
+    console.log('Executing SQL insert query...');
+    console.log('Query:', insertQuery);
+
     const result = await request.query(insertQuery);
+    console.log('SQL query executed successfully');
+    console.log('Query result:', result);
+
+    if (!result.recordset || result.recordset.length === 0) {
+      throw new Error('No ID returned from database insert');
+    }
 
     const newIdeaId = result.recordset[0].ID;
     console.log('New idea created with ID:', newIdeaId);
@@ -302,41 +384,71 @@ router.post('/api/ideas', upload.array('attachment'), async function(req, res, n
     }
 
     // Return success response
-    res.status(201).json({
+    const successResponse = {
       success: true,
       message: 'Idea submitted successfully',
       ideaId: newIdeaId,
       data: {
         id: newIdeaId,
-        title: title,
-        team: domain,
-        submittedBy: submittedBy,
+        title: trimmedTitle,
+        team: trimmedDomain,
+        submittedBy: trimmedSubmitter,
         date: new Date(dateSubmitted || Date.now()),
         state: 'New'
       },
       attachments: attachmentInfo,
       timestamp: new Date().toISOString()
-    });
+    };
+
+    console.log('Sending success response:', successResponse);
+    res.status(201).json(successResponse);
 
   } catch (err) {
-    console.error('Database insert error:', err);
+    console.error('=== ERROR IN POST /api/ideas ===');
+    console.error('Error type:', err.constructor.name);
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    console.error('Error code:', err.code);
+    console.error('Error number:', err.number);
+    console.error('Error state:', err.state);
+    console.error('Error procedure:', err.procName);
+    console.error('Error line number:', err.lineNumber);
 
     // Handle specific SQL errors
     let errorMessage = 'Failed to submit idea';
-    if (err.message.includes('duplicate')) {
+    let statusCode = 500;
+
+    if (err.message.includes('duplicate') || err.number === 2627) {
       errorMessage = 'An idea with this title already exists';
-    } else if (err.message.includes('constraint')) {
-      errorMessage = 'Invalid data provided';
-    } else if (err.message.includes('timeout')) {
+      statusCode = 409; // Conflict
+    } else if (err.message.includes('constraint') || err.number === 547) {
+      errorMessage = 'Invalid data provided - constraint violation';
+      statusCode = 400; // Bad Request
+    } else if (err.message.includes('timeout') || err.code === 'ETIMEOUT') {
       errorMessage = 'Database timeout - please try again';
+      statusCode = 504; // Gateway Timeout
+    } else if (err.message.includes('connection') || err.code === 'ECONNREFUSED') {
+      errorMessage = 'Database connection failed';
+      statusCode = 503; // Service Unavailable
+    } else if (err.message.includes('Cannot access IdeasList table')) {
+      errorMessage = 'Database table not accessible';
+      statusCode = 503;
+    } else if (err.message.includes('Database connection test failed')) {
+      errorMessage = 'Database connection error';
+      statusCode = 503;
     }
 
-    res.status(500).json({
+    const errorResponse = {
       success: false,
       error: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      errorCode: err.code,
+      errorNumber: err.number,
+      details: err.message,
       timestamp: new Date().toISOString()
-    });
+    };
+
+    console.log('Sending error response:', errorResponse);
+    res.status(statusCode).json(errorResponse);
   }
 });
 
