@@ -1,6 +1,15 @@
 var express = require('express');
 var router = express.Router();
 const sql = require('mssql');
+const multer = require('multer');
+
+// Configure multer for file uploads (store in memory)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
 
 // Database configuration
 const config = {
@@ -197,6 +206,140 @@ router.get('/api/ideas', async function(req, res, next) {
   }
 });
 
+/* API endpoint to CREATE a new idea (POST) */
+router.post('/api/ideas', upload.array('attachment'), async function(req, res, next) {
+  console.log('=== POST /api/ideas DEBUG ===');
+  console.log('Request body:', req.body);
+  console.log('Request files:', req.files ? req.files.length : 0);
+
+  try {
+    await initializePool();
+
+    // Extract data from request body
+    const {
+      title,
+      description,
+      domain,
+      submittedBy,
+      dateSubmitted
+    } = req.body;
+
+    // Validate required fields
+    if (!title || !description || !domain || !submittedBy) {
+      console.log('Validation failed - missing required fields');
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: title, description, domain, and submittedBy are required',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    console.log('Validated input data:', { title, description, domain, submittedBy });
+
+    // Prepare SQL query to insert new idea
+    const request = pool.request();
+
+    // Add parameters to prevent SQL injection
+    request.input('title', sql.NVarChar(200), title.trim());
+    request.input('idea', sql.NVarChar(sql.MAX), description.trim());
+    request.input('team', sql.NVarChar(50), domain);
+    request.input('submittedBy', sql.NVarChar(100), submittedBy.trim());
+    request.input('date', sql.DateTime, new Date(dateSubmitted || Date.now()));
+    request.input('state', sql.NVarChar(50), 'New'); // Default state for new ideas
+    request.input('new', sql.Bit, 1); // Mark as new
+    request.input('operational', sql.Bit, 0); // Default to false
+    request.input('closed', sql.Bit, 0); // Default to false
+
+    // Insert the new idea and return the ID
+    const insertQuery = `
+      INSERT INTO IdeasList (
+        Title, 
+        Idea, 
+        Team, 
+        SubmittedBy, 
+        Date, 
+        State, 
+        New, 
+        Operational, 
+        Closed,
+        Created_By,
+        Item_Type
+      )
+      OUTPUT INSERTED.ID
+      VALUES (
+        @title, 
+        @idea, 
+        @team, 
+        @submittedBy, 
+        @date, 
+        @state, 
+        @new, 
+        @operational, 
+        @closed,
+        @submittedBy,
+        'Idea'
+      )
+    `;
+
+    console.log('Executing SQL query...');
+    const result = await request.query(insertQuery);
+
+    const newIdeaId = result.recordset[0].ID;
+    console.log('New idea created with ID:', newIdeaId);
+
+    // Handle file attachments if any
+    let attachmentInfo = null;
+    if (req.files && req.files.length > 0) {
+      console.log('Processing file attachments...');
+      // For now, just log the file info
+      // You can extend this to upload to SharePoint via Power Automate
+      attachmentInfo = req.files.map(file => ({
+        originalName: file.originalname,
+        size: file.size,
+        mimeType: file.mimetype
+      }));
+      console.log('Attachments received:', attachmentInfo);
+    }
+
+    // Return success response
+    res.status(201).json({
+      success: true,
+      message: 'Idea submitted successfully',
+      ideaId: newIdeaId,
+      data: {
+        id: newIdeaId,
+        title: title,
+        team: domain,
+        submittedBy: submittedBy,
+        date: new Date(dateSubmitted || Date.now()),
+        state: 'New'
+      },
+      attachments: attachmentInfo,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (err) {
+    console.error('Database insert error:', err);
+
+    // Handle specific SQL errors
+    let errorMessage = 'Failed to submit idea';
+    if (err.message.includes('duplicate')) {
+      errorMessage = 'An idea with this title already exists';
+    } else if (err.message.includes('constraint')) {
+      errorMessage = 'Invalid data provided';
+    } else if (err.message.includes('timeout')) {
+      errorMessage = 'Database timeout - please try again';
+    }
+
+    res.status(500).json({
+      success: false,
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 /* API endpoint to get ideas with filtering and pagination */
 router.get('/api/ideas/filtered', async function(req, res, next) {
   try {
@@ -252,14 +395,14 @@ router.get('/api/ideas/filtered', async function(req, res, next) {
     request.input('offset', sql.Int, parseInt(offset));
 
     const query = `
-      SELECT 
-        ID, Title, Date, Idea, SubmittedBy, New, Team, 
-        Prioritised_for_Review, Priority_Level, Local_C_I_SSC_C_I, State, 
+      SELECT
+        ID, Title, Date, Idea, SubmittedBy, New, Team,
+        Prioritised_for_Review, Priority_Level, Local_C_I_SSC_C_I, State,
         Lead, LeadOwner, Operational, Closed, Closed_Date, Notes,
         PowerAppsId, Attachment, isTop6, Proposed_Solution, Created_By, Item_Type, Path
-      FROM IdeasList 
-      ${whereClause}
-      ORDER BY 
+      FROM IdeasList
+        ${whereClause}
+      ORDER BY
         CASE WHEN ${validSortBy} IS NOT NULL THEN ${validSortBy} ELSE '1900-01-01' END ${validSortOrder}
       OFFSET @offset ROWS
       FETCH NEXT @limit ROWS ONLY
