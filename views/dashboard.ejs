@@ -405,13 +405,13 @@
             margin-top: 5px;
             border-radius: 4px;
             position: absolute;
-            background: #E64626;
+            background: #e64626;
             transition: all 0.2s ease-in-out;
         }
 
         .gantt-progress {
             height: 100%;
-            background: transparent; /* Remove the gradient from progress to avoid duplication */
+            background: #e64626;
             border-radius: 4px 0 0 4px;
         }
 
@@ -1675,7 +1675,7 @@
 
         // Event listeners
         document.querySelector('.create-Idea-btn').addEventListener('click', function() {
-            alert('Opening Idea creation form');
+            window.location.href = '/create-idea';
         });
 
         document.querySelectorAll('.overview-item').forEach(item => {

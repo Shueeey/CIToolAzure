@@ -299,6 +299,11 @@ router.get('/api/ideas/filtered', async function(req, res, next) {
 router.get('/dashboard', function(req, res, next) {
   res.render('dashboard'); // This will render views/dashboard.ejs
 });
+
+router.get('/create-idea', function(req, res, next) {
+  res.render('create-idea'); // This will render views/dashboard.ejs
+});
+
 router.get('/report', function(req, res, next) {
   res.render('report'); // This will render views/report.ejs
 });
