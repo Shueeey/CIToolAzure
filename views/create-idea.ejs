@@ -22,7 +22,6 @@
             overflow-y: auto;
         }
 
-        /* Container wrapper for proper scrolling */
         .page-wrapper {
             display: flex;
             flex-direction: column;
@@ -32,7 +31,6 @@
             padding: 10px 20px 40px;
         }
 
-        /* Scroll indicator */
         .scroll-indicator {
             position: fixed;
             bottom: 30px;
@@ -67,7 +65,6 @@
             }
         }
 
-        /* Decorative lightbulbs background */
         .lightbulb-pattern {
             position: absolute;
             width: 100%;
@@ -92,7 +89,6 @@
             50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        /* Back button */
         .back-button {
             position: absolute;
             top: 30px;
@@ -118,7 +114,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* Main form container */
         .form-container {
             background: white;
             border-radius: 20px;
@@ -132,7 +127,6 @@
             max-height: none;
         }
 
-        /* Content overflow hints */
         .form-container::before {
             content: '';
             position: absolute;
@@ -180,7 +174,6 @@
             }
         }
 
-        /* Header with lightbulb icon */
         .form-header {
             text-align: center;
             margin-bottom: 40px;
@@ -212,7 +205,6 @@
             font-size: 16px;
         }
 
-        /* Form fields */
         .form-group {
             margin-bottom: 25px;
         }
@@ -257,7 +249,6 @@
             cursor: pointer;
         }
 
-        /* File upload area */
         .file-upload-area {
             border: 2px dashed #e9ecef;
             border-radius: 12px;
@@ -331,7 +322,6 @@
             padding: 5px;
         }
 
-        /* Action buttons */
         .form-actions {
             display: flex;
             gap: 15px;
@@ -380,7 +370,6 @@
             transform: none;
         }
 
-        /* Loading state */
         .loading-spinner {
             width: 20px;
             height: 20px;
@@ -394,7 +383,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Success message */
         .success-message {
             display: none;
             text-align: center;
@@ -422,7 +410,6 @@
             }
         }
 
-        /* Error message */
         .error-message {
             display: none;
             text-align: center;
@@ -439,12 +426,10 @@
             animation: slideDown 0.5s ease-out;
         }
 
-        /* Required field indicator */
         .required {
             color: #dc3545;
         }
 
-        /* Responsive design */
         @media (max-width: 768px) {
             .page-wrapper {
                 padding: 60px 15px 20px;
@@ -474,7 +459,6 @@
                 right: 15px;
             }
 
-
             .scroll-progress-track {
                 height: 150px;
                 width: 3px;
@@ -495,28 +479,22 @@
     </style>
 </head>
 <body>
-<!-- Page wrapper for proper scrolling -->
 <div class="page-wrapper">
-    <!-- Back button -->
     <button class="back-button" onclick="goBack()">
         <i class="fas fa-arrow-left"></i>
     </button>
 
-    <!-- Main form container -->
     <div class="form-container" id="formContainer">
-        <!-- Success message -->
         <div class="success-message" id="successMessage">
             <i class="fas fa-check-circle"></i>
             <strong>Success!</strong> Your idea has been submitted successfully.
         </div>
 
-        <!-- Error message -->
         <div class="error-message" id="errorMessage">
             <i class="fas fa-exclamation-triangle"></i>
             <strong>Error!</strong> <span id="errorText">Something went wrong. Please try again.</span>
         </div>
 
-        <!-- Form header -->
         <div class="form-header">
             <div class="lightbulb-icon">
                 <i class="fas fa-lightbulb"></i>
@@ -525,9 +503,7 @@
             <p class="form-subtitle">Share your improvement suggestion with the team</p>
         </div>
 
-        <!-- Idea submission form -->
         <form id="ideaForm">
-            <!-- Idea name -->
             <div class="form-group">
                 <label class="form-label" for="ideaName">
                     Name your idea <span class="required">*</span>
@@ -543,7 +519,6 @@
                 >
             </div>
 
-            <!-- Idea description -->
             <div class="form-group">
                 <label class="form-label" for="ideaDescription">
                     Describe your idea <span class="required">*</span>
@@ -558,7 +533,6 @@
                 ></textarea>
             </div>
 
-            <!-- Domain selection -->
             <div class="form-group">
                 <label class="form-label" for="ideaDomain">
                     Which domain does this belong to? <span class="required">*</span>
@@ -575,7 +549,6 @@
                 </select>
             </div>
 
-            <!-- Submitter information -->
             <div class="form-group">
                 <label class="form-label" for="submitterName">
                     Your name <span class="required">*</span>
@@ -591,7 +564,6 @@
                 >
             </div>
 
-            <!-- File attachment -->
             <div class="form-group">
                 <label class="form-label">
                     Attach file (optional)
@@ -609,7 +581,6 @@
                 <ul class="file-list" id="fileList"></ul>
             </div>
 
-            <!-- Form actions -->
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" onclick="goBack()">
                     <i class="fas fa-times"></i>
@@ -642,7 +613,6 @@
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
 
-        // Handle drag and drop
         fileUploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             fileUploadArea.classList.add('dragover');
@@ -659,7 +629,6 @@
             handleFileSelection(files);
         });
 
-        // Handle file input change
         fileInput.addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             handleFileSelection(files);
@@ -669,13 +638,11 @@
     // Handle file selection
     function handleFileSelection(files) {
         files.forEach(file => {
-            // Check file size (10MB limit)
             if (file.size > 10 * 1024 * 1024) {
                 showError(`File "${file.name}" is too large. Maximum size is 10MB.`);
                 return;
             }
 
-            // Check if file already selected
             if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
                 showError(`File "${file.name}" is already selected.`);
                 return;
@@ -733,7 +700,6 @@
             await submitIdea();
         });
 
-        // Auto-resize textarea
         const textarea = document.getElementById('ideaDescription');
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
@@ -746,8 +712,20 @@
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('ideaForm');
 
+        // Debug: Log form data before submission
+        console.log('=== FORM SUBMISSION DEBUG ===');
+        console.log('Form data being submitted:');
+        console.log('- Title:', document.getElementById('ideaName').value.trim());
+        console.log('- Description:', document.getElementById('ideaDescription').value.trim());
+        console.log('- Domain:', document.getElementById('ideaDomain').value);
+        console.log('- Submitter:', document.getElementById('submitterName').value.trim());
+        console.log('- Files selected:', selectedFiles.length);
+        console.log('- Current URL:', window.location.href);
+        console.log('- Target endpoint:', '/api/ideas');
+
         // Validate form
         if (!form.checkValidity()) {
+            console.log('Form validation failed');
             form.reportValidity();
             return;
         }
@@ -762,8 +740,18 @@
             formData.append('title', document.getElementById('ideaName').value.trim());
             formData.append('description', document.getElementById('ideaDescription').value.trim());
             formData.append('domain', document.getElementById('ideaDomain').value);
-            // formData.append('submittedBy', document.getElementById('submitterName').value.trim());
+            formData.append('submittedBy', document.getElementById('submitterName').value.trim());
             formData.append('dateSubmitted', new Date().toISOString());
+
+            // Debug: Log FormData contents
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`- ${key}: ${value}`);
+            }
+
+            console.log('Making fetch request to:', '/api/ideas');
+            console.log('Request method: POST');
+            console.log('Request headers: multipart/form-data (automatically set by browser)');
 
             // Submit metadata to API
             const response = await fetch('/api/ideas', {
@@ -771,13 +759,53 @@
                 body: formData
             });
 
-            const result = await response.json();
+            // Debug: Log response details
+            console.log('=== RESPONSE DEBUG ===');
+            console.log('Response status:', response.status);
+            console.log('Response status text:', response.statusText);
+            console.log('Response headers:');
+            response.headers.forEach((value, key) => {
+                console.log(`- ${key}: ${value}`);
+            });
+            console.log('Response URL:', response.url);
+            console.log('Response type:', response.type);
+            console.log('Response ok:', response.ok);
+
+            // Get response text first to see what we're actually receiving
+            const responseText = await response.text();
+            console.log('Raw response text:', responseText);
+            console.log('Response text length:', responseText.length);
+            console.log('Response text preview (first 200 chars):', responseText.substring(0, 200));
+
+            // Check if response is HTML (common for 404 errors)
+            if (responseText.trim().startsWith('<')) {
+                console.error('PROBLEM: Response is HTML, not JSON');
+                console.error('This usually means:');
+                console.error('1. The endpoint /api/ideas does not exist');
+                console.error('2. The server is returning a 404 page');
+                console.error('3. There is a routing issue');
+                console.error('4. The server is not configured to handle this endpoint');
+                throw new Error('Server returned HTML instead of JSON. Check if /api/ideas endpoint exists.');
+            }
+
+            // Try to parse JSON only if we have valid JSON
+            let result;
+            try {
+                result = JSON.parse(responseText);
+                console.log('Parsed JSON result:', result);
+            } catch (jsonError) {
+                console.error('JSON parsing failed:', jsonError);
+                console.error('Response was not valid JSON:', responseText);
+                throw new Error(`Invalid JSON response: ${jsonError.message}`);
+            }
 
             if (response.ok && result.success) {
+                console.log('Success! Idea submitted with ID:', result.ideaId);
                 const ideaId = result.ideaId;
 
                 // Upload attachments to SharePoint if any
                 if (selectedFiles.length > 0) {
+                    console.log('Uploading attachments...');
                     await uploadAttachmentsToSharePoint(ideaId);
                 }
 
@@ -786,27 +814,45 @@
                     goBack();
                 }, 2000);
             } else {
+                console.error('API returned error:', result);
                 throw new Error(result.error || 'Failed to submit idea');
             }
 
         } catch (error) {
-            console.error('Error submitting idea:', error);
-            showError(error.message || 'Failed to submit idea. Please try again.');
+            console.error('=== ERROR DETAILS ===');
+            console.error('Error type:', error.constructor.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+
+            // Show user-friendly error message
+            let userMessage = error.message;
+            if (error.message.includes('HTML instead of JSON')) {
+                userMessage = 'The submission endpoint is not available. Please contact your administrator.';
+            } else if (error.message.includes('Failed to fetch')) {
+                userMessage = 'Network error. Please check your connection and try again.';
+            }
+
+            showError(userMessage);
         } finally {
             // Reset button state
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+            console.log('=== FORM SUBMISSION END ===');
         }
     }
 
     // Upload attachments to SharePoint via Power Automate
     async function uploadAttachmentsToSharePoint(ideaId) {
+        console.log('=== ATTACHMENT UPLOAD DEBUG ===');
         const errors = [];
 
         for (const file of selectedFiles) {
             try {
+                console.log(`Uploading file: ${file.name} (${formatFileSize(file.size)})`);
+
                 // Convert file to base64
                 const base64Data = await toBase64(file);
+                console.log('File converted to base64, length:', base64Data.length);
 
                 // Prepare payload for Power Automate
                 const payload = {
@@ -814,6 +860,9 @@
                     fileName: file.name,
                     fileContent: base64Data.split(',')[1] // Remove data URL prefix
                 };
+
+                console.log('Sending to Power Automate:', POWER_AUTOMATE_ENDPOINT);
+                console.log('Payload keys:', Object.keys(payload));
 
                 // Send to Power Automate
                 const response = await fetch(POWER_AUTOMATE_ENDPOINT, {
@@ -824,15 +873,23 @@
                     body: JSON.stringify(payload)
                 });
 
+                console.log('Power Automate response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Power Automate error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
+
+                console.log('File uploaded successfully:', file.name);
             } catch (error) {
+                console.error(`Error uploading file ${file.name}:`, error);
                 errors.push(`File ${file.name}: ${error.message}`);
             }
         }
 
         if (errors.length > 0) {
+            console.error('Some attachment uploads failed:', errors);
             showError('Idea submitted but some attachments failed: ' + errors.join(', '));
         }
     }
