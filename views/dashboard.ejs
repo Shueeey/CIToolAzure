@@ -1513,9 +1513,22 @@
     function calculateBarPosition(idea, timeline) {
         // Parse dates
         const startDate = idea.DateSubmitted ? new Date(idea.DateSubmitted) : timeline.start;
-        const endDate = idea.ExpectedCompletion ? new Date(idea.ExpectedCompletion) :
-            idea.ActualCompletion ? new Date(idea.ActualCompletion) :
-                new Date(startDate.getTime() + (90 * 24 * 60 * 60 * 1000)); // Default 3 months
+
+        // Determine end date logic
+        let endDate;
+        let hasDefiniteEnd = false;
+
+        if (idea.ExpectedCompletion) {
+            endDate = new Date(idea.ExpectedCompletion);
+            hasDefiniteEnd = true;
+        } else if (idea.ActualCompletion) {
+            endDate = new Date(idea.ActualCompletion);
+            hasDefiniteEnd = true;
+        } else {
+            // No completion date - extend to end of timeline
+            endDate = timeline.end;
+            hasDefiniteEnd = false;
+        }
 
         // Calculate position as percentage of timeline
         const startOffset = Math.max(0, (startDate - timeline.start) / (timeline.end - timeline.start) * 100);
@@ -1539,18 +1552,27 @@
         }
 
         // Format duration text
-        const durationDays = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000));
-        const durationText = durationDays > 30 ?
-            `${Math.round(durationDays / 30)} months` :
-            `${durationDays} days`;
+        let durationText;
+        if (hasDefiniteEnd) {
+            const durationDays = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000));
+            durationText = durationDays > 30 ?
+                `${Math.round(durationDays / 30)} months` :
+                `${durationDays} days`;
+        } else {
+            durationText = 'Ongoing';
+        }
+
+        // Format end date text
+        const endDateText = hasDefiniteEnd ? endDate.toLocaleDateString('en-AU') : 'No end date set';
 
         return {
             left: startOffset,
             width: width,
             progress: progress,
             startDate: startDate.toLocaleDateString('en-AU'),
-            endDate: endDate.toLocaleDateString('en-AU'),
-            durationText: durationText
+            endDate: endDateText,
+            durationText: durationText,
+            hasDefiniteEnd: hasDefiniteEnd
         };
     }
 
