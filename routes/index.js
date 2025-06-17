@@ -19,7 +19,7 @@ const config = {
 let pool = null;
 
 // Initialize connection pool
-async function initializePool() {
+async function initialisePool() {
   try {
     if (!pool) {
       pool = await sql.connect(config);
@@ -42,7 +42,7 @@ router.get('/', async function(req, res, next) {
   };
 
   try {
-    await initializePool();
+    await initialisePool();
 
     // Get top 5 most recent ideas with key columns
     const result = await pool.request().query(`
@@ -95,7 +95,7 @@ router.get('/api/db-status', async function(req, res, next) {
   };
 
   try {
-    await initializePool();
+    await initialisePool();
 
     // Get total record count
     const countResult = await pool.request().query('SELECT COUNT(*) as totalRecords FROM IdeasList');
@@ -147,7 +147,7 @@ router.get('/api/db-status', async function(req, res, next) {
 /* API endpoint to get all ideas data with full schema */
 router.get('/api/ideas', async function(req, res, next) {
   try {
-    await initializePool();
+    await initialisePool();
 
     const result = await pool.request().query(`
       SELECT
@@ -205,7 +205,7 @@ router.post('/api/ideas', async function(req, res, next) {
 
   try {
     console.log('Attempting to initialize database pool...');
-    await initializePool();
+    await initialisePool();
     console.log('Database pool initialized successfully');
 
     // Extract data from request body - FIXED FIELD MAPPING
@@ -247,10 +247,10 @@ router.post('/api/ideas', async function(req, res, next) {
         success: false,
         error: 'Missing required fields: title, description, domain, and submittedBy are required',
         received: {
-          title: !!actualTitle,
-          description: !!actualDescription,
-          domain: !!actualDomain,
-          submittedBy: !!actualSubmittedBy
+          title: actualTitle,
+          description: actualDescription,
+          domain: actualDomain,
+          submittedBy: actualSubmittedBy
         },
         receivedFields: Object.keys(req.body),
         timestamp: new Date().toISOString()
@@ -430,7 +430,7 @@ router.post('/api/ideas', async function(req, res, next) {
 /* API endpoint to get ideas with filtering and pagination */
 router.get('/api/ideas/filtered', async function(req, res, next) {
   try {
-    await initializePool();
+    await initialisePool();
 
     const {
       team,
@@ -545,7 +545,7 @@ router.get('/index', function(req, res, next) {
 /* API endpoint to get unique values for filtering */
 router.get('/api/filter-options', async function(req, res, next) {
   try {
-    await initializePool();
+    await initialisePool();
 
     const queries = {
       teams: "SELECT DISTINCT Team FROM IdeasList WHERE Team IS NOT NULL AND Team != '' ORDER BY Team",
