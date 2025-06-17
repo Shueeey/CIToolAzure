@@ -889,12 +889,8 @@
                 </div>
 
                 <!-- Month Header -->
-                <div class="gantt-header-row">
-                    <div class="gantt-month">Aug</div>
-                    <div class="gantt-month">Sep</div>
-                    <div class="gantt-month">Oct</div>
-                    <div class="gantt-month">Nov</div>
-                    <div class="gantt-month">Dec</div>
+                <div class="gantt-header-row" id="ganttMonthHeader">
+                    <div class="loading">Loading timeline...</div>
                 </div>
 
                 <!-- Gantt Rows -->
@@ -1401,39 +1397,48 @@
     // Render gantt chart with top priority ideas
     function renderGanttChart() {
         const ganttRows = document.getElementById('ganttRows');
+        const ganttMonthHeader = document.getElementById('ganttMonthHeader');
 
         if (dashboardData.topPriorityIdeas.length === 0) {
             ganttRows.innerHTML = '<div class="loading">No top priority ideas found</div>';
+            ganttMonthHeader.innerHTML = '<div class="loading">No timeline data</div>';
             return;
         }
 
+        // Calculate timeline based on actual dates
+        const timeline = calculateGanttTimeline(dashboardData.topPriorityIdeas);
+
+        // Render month headers
+        renderGanttMonthHeaders(ganttMonthHeader, timeline);
+
+        // Clear and render gantt rows
         ganttRows.innerHTML = '';
 
         dashboardData.topPriorityIdeas.forEach((idea, index) => {
-            // Calculate progress and position for each idea
-            const progress = Math.random() * 100; // Random progress for demo
-            const startOffset = Math.random() * 30; // Random start position
-            const duration = 40 + Math.random() * 40; // Random duration
+            // Calculate actual position and duration based on dates
+            const barData = calculateBarPosition(idea, timeline);
 
             // Create task name element
             const taskName = document.createElement('div');
             taskName.className = 'gantt-task-name';
             taskName.textContent = idea.Title.length > 25 ? idea.Title.substring(0, 25) + '...' : idea.Title;
-            taskName.title = idea.Title; // Full title on hover
+            taskName.title = `${idea.Title} (ID: ${idea.ID})`;
 
             // Create bar container
             const barContainer = document.createElement('div');
             barContainer.className = 'gantt-bar-container';
 
-            // Create bar with progress
+            // Create bar with actual positioning
             const bar = document.createElement('div');
             bar.className = 'gantt-bar';
-            bar.style.left = `${startOffset}%`;
-            bar.style.width = `${duration}%`;
+            bar.style.left = `${barData.left}%`;
+            bar.style.width = `${barData.width}%`;
+            bar.title = `${idea.Title}\nStart: ${barData.startDate}\nDuration: ${barData.durationText}`;
 
+            // Create progress bar
             const progressBar = document.createElement('div');
             progressBar.className = 'gantt-progress';
-            progressBar.style.width = `${progress}%`;
+            progressBar.style.width = `${barData.progress}%`;
 
             bar.appendChild(progressBar);
             barContainer.appendChild(bar);
@@ -1441,6 +1446,112 @@
             ganttRows.appendChild(taskName);
             ganttRows.appendChild(barContainer);
         });
+    }
+
+    // Calculate timeline span for gantt chart
+    function calculateGanttTimeline(ideas) {
+        const now = new Date();
+        const dates = [];
+
+        // Collect all relevant dates
+        ideas.forEach(idea => {
+            const startDate = idea.DateSubmitted ? new Date(idea.DateSubmitted) : now;
+            const endDate = idea.ExpectedCompletion ? new Date(idea.ExpectedCompletion) :
+                idea.ActualCompletion ? new Date(idea.ActualCompletion) :
+                    new Date(startDate.getTime() + (90 * 24 * 60 * 60 * 1000)); // Default 3 months
+
+            dates.push(startDate, endDate);
+        });
+
+        // Add current date
+        dates.push(now);
+
+        // Find min and max dates
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(Math.max(...dates));
+
+        // Extend the range slightly for better visualization
+        const timelineStart = new Date(minDate.getFullYear(), minDate.getMonth() - 1, 1);
+        const timelineEnd = new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 0);
+
+        // Generate month list
+        const months = [];
+        let currentDate = new Date(timelineStart);
+
+        while (currentDate <= timelineEnd) {
+            months.push({
+                year: currentDate.getFullYear(),
+                month: currentDate.getMonth(),
+                label: currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+                date: new Date(currentDate)
+            });
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+
+        return {
+            start: timelineStart,
+            end: timelineEnd,
+            months: months,
+            totalDays: Math.ceil((timelineEnd - timelineStart) / (24 * 60 * 60 * 1000))
+        };
+    }
+
+    // Render month headers for gantt chart
+    function renderGanttMonthHeaders(container, timeline) {
+        container.innerHTML = '';
+
+        timeline.months.forEach(month => {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'gantt-month';
+            monthDiv.textContent = month.label;
+            monthDiv.title = `${month.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+            container.appendChild(monthDiv);
+        });
+    }
+
+    // Calculate bar position based on actual dates
+    function calculateBarPosition(idea, timeline) {
+        // Parse dates
+        const startDate = idea.DateSubmitted ? new Date(idea.DateSubmitted) : timeline.start;
+        const endDate = idea.ExpectedCompletion ? new Date(idea.ExpectedCompletion) :
+            idea.ActualCompletion ? new Date(idea.ActualCompletion) :
+                new Date(startDate.getTime() + (90 * 24 * 60 * 60 * 1000)); // Default 3 months
+
+        // Calculate position as percentage of timeline
+        const startOffset = Math.max(0, (startDate - timeline.start) / (timeline.end - timeline.start) * 100);
+        const endOffset = Math.min(100, (endDate - timeline.start) / (timeline.end - timeline.start) * 100);
+        const width = Math.max(2, endOffset - startOffset); // Minimum 2% width for visibility
+
+        // Calculate progress based on current date and status
+        let progress = 0;
+        const now = new Date();
+
+        if (idea.ActualCompletion) {
+            progress = 100; // Completed
+        } else if (idea.Status) {
+            const status = idea.Status.toLowerCase();
+            if (status.includes('new')) progress = 10;
+            else if (status.includes('prioriti')) progress = 25;
+            else if (status.includes('scop')) progress = 40;
+            else if (status.includes('progress')) progress = 60;
+            else if (status.includes('operation')) progress = 85;
+            else if (status.includes('complet')) progress = 100;
+        }
+
+        // Format duration text
+        const durationDays = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000));
+        const durationText = durationDays > 30 ?
+            `${Math.round(durationDays / 30)} months` :
+            `${durationDays} days`;
+
+        return {
+            left: startOffset,
+            width: width,
+            progress: progress,
+            startDate: startDate.toLocaleDateString('en-AU'),
+            endDate: endDate.toLocaleDateString('en-AU'),
+            durationText: durationText
+        };
     }
 
     // Render recent ideas
