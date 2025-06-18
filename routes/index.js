@@ -284,9 +284,12 @@ router.post('/api/ideas', async function(req, res, next) {
     }
 
     // Prepare SQL query to insert new idea
-    const request = pool.request();
+    const maxIdResult = await pool.request().query(`SELECT ISNULL(MAX(ID), 0) AS MaxID FROM IdeasList`);
+    const nextId = maxIdResult.recordset[0].MaxID + 1;
+    console.log('Calculated next ID:', nextId);
 
     // Add parameters to prevent SQL injection with proper length handling
+    const request = pool.request();
     const trimmedTitle = title.trim().substring(0, 200); // Ensure it fits
     const trimmedSubmitter = submittedBy.trim().substring(0, 100);
     const trimmedDomain = domain.substring(0, 50);
@@ -303,6 +306,7 @@ router.post('/api/ideas', async function(req, res, next) {
     request.input('path', sql.NVarChar(500), ''); // <-- placeholder: empty string
 
     console.log('SQL Parameters prepared:', {
+      id: nextId,
       title: trimmedTitle,
       team: trimmedDomain,
       submittedBy: trimmedSubmitter,
@@ -312,6 +316,7 @@ router.post('/api/ideas', async function(req, res, next) {
     // Insert the new idea and return the ID
     const insertQuery = `
       INSERT INTO IdeasList (
+        ID,
         Title,
         Idea,
         Team,
@@ -327,6 +332,7 @@ router.post('/api/ideas', async function(req, res, next) {
       )
         OUTPUT INSERTED.ID
       VALUES (
+        @id,  
         @title,
         @idea,
         @team,
