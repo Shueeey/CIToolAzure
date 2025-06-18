@@ -742,7 +742,7 @@
                 domain: document.getElementById('ideaDomain').value,
                 submittedBy: document.getElementById('submitterName').value.trim(),
                 dateSubmitted: new Date().toISOString(),
-                path: 0
+                path: ''
             };
 
             const response = await fetch('/api/ideas', {

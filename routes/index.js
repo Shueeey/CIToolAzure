@@ -300,7 +300,7 @@ router.post('/api/ideas', async function(req, res, next) {
     request.input('new', sql.Bit, 1); // Mark as new
     request.input('operational', sql.Bit, 0); // Default to false
     request.input('closed', sql.Bit, 0); // Default to false
-    request.input('path', sql.Bit, 0);
+    request.input('path', sql.NVarChar(500), ''); // <-- placeholder: empty string
 
     console.log('SQL Parameters prepared:', {
       title: trimmedTitle,
@@ -322,7 +322,8 @@ router.post('/api/ideas', async function(req, res, next) {
         Operational,
         Closed,
         Created_By,
-        Item_Type
+        Item_Type, 
+        Path
       )
         OUTPUT INSERTED.ID
       VALUES (
@@ -337,6 +338,7 @@ router.post('/api/ideas', async function(req, res, next) {
         @closed,
         @submittedBy,
         'Idea'
+        @path
         )
     `;
 
