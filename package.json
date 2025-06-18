@@ -16,5 +16,10 @@
     "morgan": "~1.9.1",
     "mssql": "^11.0.1",
     "multer": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/mssql": "^9.1.7",
+    "@types/web": "^0.0.242",
+    "typescript": "^5.8.3"
   }
 }
