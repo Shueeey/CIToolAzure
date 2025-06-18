@@ -285,7 +285,7 @@ router.post('/api/ideas', async function(req, res, next) {
 
     // Prepare SQL query to insert new idea
     const maxIdResult = await pool.request().query(`SELECT ISNULL(MAX(ID), 0) AS MaxID FROM IdeasList`);
-    const nextId = maxIdResult.recordset[0].MaxID + 1;
+    const nextId = maxIdResult + 1;
     console.log('Calculated next ID:', nextId);
 
     // Add parameters to prevent SQL injection with proper length handling
