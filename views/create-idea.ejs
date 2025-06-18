@@ -742,6 +742,7 @@
                 domain: document.getElementById('ideaDomain').value,
                 submittedBy: document.getElementById('submitterName').value.trim(),
                 dateSubmitted: new Date().toISOString()
+                path: 'From CI Tool'
             };
 
             const response = await fetch('/api/ideas', {
