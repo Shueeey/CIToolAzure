@@ -18,7 +18,7 @@ const config = {
 // Connection pool for better performance
 let pool = null;
 
-// Initialize connection pool
+// Initialise connection pool
 async function initialisePool() {
   try {
     if (!pool) {
@@ -208,54 +208,48 @@ router.post('/api/ideas', async function(req, res, next) {
     await initialisePool();
     console.log('Database pool initialized successfully');
 
-    // Extract data from request body - FIXED FIELD MAPPING
+    // Extract data from request body - these should match the form field names
     const {
-      title,           // From form field 'ideaName'
-      description,     // From form field 'ideaDescription'
-      domain,          // From form field 'ideaDomain'
-      submittedBy,     // From form field 'submitterName'
+      title,           // From formData.append('title', ...)
+      description,     // From formData.append('description', ...)
+      domain,          // From formData.append('domain', ...)
+      submittedBy,     // From formData.append('submittedBy', ...)
       dateSubmitted
     } = req.body;
 
-    // Also try the actual form field names in case the mapping is wrong
-    const actualTitle = title || req.body.ideaName;
-    const actualDescription = description || req.body.ideaDescription;
-    const actualDomain = domain || req.body.ideaDomain;
-    const actualSubmittedBy = submittedBy || req.body.submitterName;
-
     console.log('Extracted form data:', {
-      title: actualTitle ? actualTitle.substring(0, 50) + '...' : 'MISSING',
-      description: actualDescription ? actualDescription.substring(0, 50) + '...' : 'MISSING',
-      domain: actualDomain || 'MISSING',
-      submittedBy: actualSubmittedBy || 'MISSING',
+      title: title ? title.substring(0, 50) + '...' : 'MISSING',
+      description: description ? description.substring(0, 50) + '...' : 'MISSING',
+      domain: domain || 'MISSING',
+      submittedBy: submittedBy || 'MISSING',
       dateSubmitted: dateSubmitted || 'MISSING'
     });
 
     console.log('All request body keys:', Object.keys(req.body));
 
-    // Validate required fields using actual values
-    if (!actualTitle || !actualDescription || !actualDomain || !actualSubmittedBy) {
-      console.log('Validation failed - missing required fields');
-      console.log('Missing fields:', {
-        title: !actualTitle,
-        description: !actualDescription,
-        domain: !actualDomain,
-        submittedBy: !actualSubmittedBy
-      });
-      console.log('Full request body for debugging:', req.body);
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: title, description, domain, and submittedBy are required',
-        received: {
-          title: !!actualTitle,
-          description: !!actualDescription,
-          domain: !!actualDomain,
-          submittedBy: !!actualSubmittedBy
-        },
-        receivedFields: Object.keys(req.body),
-        timestamp: new Date().toISOString()
-      });
-    }
+    // // Validate required fields
+    // if (!title || !description || !domain || !submittedBy) {
+    //   console.log('Validation failed - missing required fields');
+    //   console.log('Missing fields:', {
+    //     title: !title,
+    //     description: !description,
+    //     domain: !domain,
+    //     submittedBy: !submittedBy
+    //   });
+    //   console.log('Full request body for debugging:', req.body);
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: 'Missing required fields: title, description, domain, and submittedBy are required',
+    //     received: {
+    //       title: !!title,
+    //       description: !!description,
+    //       domain: !!domain,
+    //       submittedBy: !!submittedBy
+    //     },
+    //     receivedFields: Object.keys(req.body),
+    //     timestamp: new Date().toISOString()
+    //   });
+    // }
 
     console.log('Validation passed. Preparing database insertion...');
 
@@ -293,12 +287,12 @@ router.post('/api/ideas', async function(req, res, next) {
     const request = pool.request();
 
     // Add parameters to prevent SQL injection with proper length handling
-    const trimmedTitle = actualTitle.trim().substring(0, 200); // Ensure it fits
-    const trimmedSubmitter = actualSubmittedBy.trim().substring(0, 100);
-    const trimmedDomain = actualDomain.substring(0, 50);
+    const trimmedTitle = title.trim().substring(0, 200); // Ensure it fits
+    const trimmedSubmitter = submittedBy.trim().substring(0, 100);
+    const trimmedDomain = domain.substring(0, 50);
 
     request.input('title', sql.NVarChar(200), trimmedTitle);
-    request.input('idea', sql.NVarChar(sql.MAX), actualDescription.trim());
+    request.input('idea', sql.NVarChar(sql.MAX), description.trim());
     request.input('team', sql.NVarChar(50), trimmedDomain);
     request.input('submittedBy', sql.NVarChar(100), trimmedSubmitter);
     request.input('date', sql.DateTime, new Date(dateSubmitted || Date.now()));
