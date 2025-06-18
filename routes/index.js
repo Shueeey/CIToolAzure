@@ -247,10 +247,10 @@ router.post('/api/ideas', async function(req, res, next) {
         success: false,
         error: 'Missing required fields: title, description, domain, and submittedBy are required',
         received: {
-          title: actualTitle,
-          description: actualDescription,
-          domain: actualDomain,
-          submittedBy: actualSubmittedBy
+          title: !!actualTitle,
+          description: !!actualDescription,
+          domain: !!actualDomain,
+          submittedBy: !!actualSubmittedBy
         },
         receivedFields: Object.keys(req.body),
         timestamp: new Date().toISOString()
