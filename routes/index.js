@@ -294,6 +294,7 @@ router.post('/api/ideas', async function(req, res, next) {
     const trimmedSubmitter = submittedBy.trim().substring(0, 100);
     const trimmedDomain = domain.substring(0, 50);
 
+    request.input('id', sql.Int, nextId);
     request.input('title', sql.NVarChar(200), trimmedTitle);
     request.input('idea', sql.NVarChar(sql.MAX), description.trim());
     request.input('team', sql.NVarChar(50), trimmedDomain);
