@@ -214,7 +214,7 @@ router.post('/api/ideas', async function(req, res, next) {
       description,     // From formData.append('description', ...)
       domain,          // From formData.append('domain', ...)
       submittedBy,     // From formData.append('submittedBy', ...)
-      dateSubmitted
+      dateSubmitted,
     } = req.body;
 
     console.log('Extracted form data:', {
@@ -300,6 +300,7 @@ router.post('/api/ideas', async function(req, res, next) {
     request.input('new', sql.Bit, 1); // Mark as new
     request.input('operational', sql.Bit, 0); // Default to false
     request.input('closed', sql.Bit, 0); // Default to false
+    request.input('path', sql.Bit, 0);
 
     console.log('SQL Parameters prepared:', {
       title: trimmedTitle,
