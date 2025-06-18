@@ -337,7 +337,7 @@ router.post('/api/ideas', async function(req, res, next) {
         @operational,
         @closed,
         @submittedBy,
-        'Idea'
+        'Idea',
         @path
         )
     `;
