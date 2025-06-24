@@ -844,7 +844,7 @@
       <input type="datetime-local" id="endTime" class="filter-select" placeholder="End Time">
       <select class="filter-select" id="priorityFilter">
         <option value="">All Priorities</option>
-        <option value="true">Top 5 Only</option>
+        <option value="true">Top 6 Only</option>
         <option value="false">Regular Priority</option>
       </select>
     </div>
@@ -1828,7 +1828,7 @@
             <div class="card-footer">
                 <div class="card-state">
                     <div class="state-dot ${statusClass}"></div>
-                    <span>${isTop5 ? 'Top 5' : 'Normal'}</span>
+                    <span>${isTop5 ? 'Top 6' : 'Normal'}</span>
                 </div>
                 <div class="card-domain">${item.Domain || 'General'}</div>
             </div>
@@ -1980,7 +1980,7 @@
     const isTop5 = item.Top5 || item.isTop5;
     modalPriority.innerHTML = `
             <span class="state-badge ${isTop5 ? 'major' : 'normal'}">
-                ${isTop5 ? '🔥 Top 5 Priority' : '📋 Normal Priority'}
+                ${isTop5 ? '🔥 Top 6 Priority' : '📋 Normal Priority'}
             </span>
         `;
 
