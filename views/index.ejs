@@ -340,6 +340,8 @@
       padding: 16px;
       border: 1px solid var(--border-color);
       transition: all 0.3s ease;
+      position: relative; /* Required for absolute positioning of scrollbar */
+
     }
 
     .column-header {
@@ -367,9 +369,9 @@
     }
 
     .column-content {
+      position: relative;
       max-height: calc(100vh - 200px);
       overflow-y: auto;
-      position: relative;
       /* Hide default scrollbar on WebKit browsers */
       scrollbar-width: none; /* Firefox */
       -ms-overflow-style: none; /* IE and Edge */
@@ -826,6 +828,7 @@
       position: absolute;
       right: 4px;
       top: 0;
+      height: 100%;
       width: 6px;
       background: transparent;
       border-radius: 3px;
