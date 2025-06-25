@@ -764,6 +764,78 @@
       font-size: 14px;
     }
 
+    /* Custom Elegant Scrollbar */
+    .custom-scrollbar {
+      position: absolute;
+      right: 2px;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: transparent;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.3s ease, width 0.2s ease;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .custom-scrollbar.visible {
+      opacity: 0.6;
+    }
+
+    .custom-scrollbar:hover,
+    .column:hover .custom-scrollbar {
+      opacity: 0.8;
+      width: 8px;
+    }
+
+    .custom-scrollbar-thumb {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 100%;
+      background: linear-gradient(45deg, var(--accent-primary) 0%, #ff8c42 100%);
+      border-radius: 3px;
+      min-height: 20px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+
+    .custom-scrollbar-thumb:hover {
+      background: linear-gradient(45deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+      box-shadow: 0 3px 8px rgba(255, 107, 53, 0.4);
+      transform: scaleX(1.2);
+    }
+
+    /* Dark mode scrollbar adjustments */
+    [data-theme="dark"] .custom-scrollbar-thumb {
+      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.5);
+    }
+
+    [data-theme="dark"] .custom-scrollbar-thumb:hover {
+      box-shadow: 0 3px 8px rgba(255, 107, 53, 0.6);
+    }
+
+    /* Dark mode specific adjustments */
+    [data-theme="dark"] .column {
+      background-color: var(--bg-tertiary);
+    }
+
+    [data-theme="dark"] .card {
+      background-color: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] .card:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0px 4px 12px var(--hover-shadow);
+    }
+
+    [data-theme="dark"] .modal-content {
+      background-color: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .sidebar {
@@ -822,85 +894,6 @@
         width: 200px;
       }
     }
-
-    /* Custom Elegant Scrollbar */
-    .custom-scrollbar {
-      position: absolute;
-      right: 4px;
-      top: 0;
-      height: 100%;
-      width: 6px;
-      background: transparent;
-      border-radius: 3px;
-      opacity: 0;
-      transition: opacity 0.3s ease, width 0.2s ease;
-      z-index: 10;
-      pointer-events: none;
-    }
-
-    .custom-scrollbar.visible {
-      opacity: 0.6;
-    }
-
-    .custom-scrollbar:hover,
-    .column-content:hover + .custom-scrollbar {
-      opacity: 0.8;
-      width: 8px;
-    }
-
-    .custom-scrollbar-thumb {
-      position: absolute;
-      right: 0;
-      width: 100%;
-      background: linear-gradient(45deg, var(--accent-primary) 0%, #ff8c42 100%);
-      border-radius: 3px;
-      min-height: 20px;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
-    }
-
-    .custom-scrollbar-thumb:hover {
-      background: linear-gradient(45deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
-      box-shadow: 0 3px 8px rgba(255, 107, 53, 0.4);
-      transform: scaleX(1.2);
-    }
-
-    .column:hover .custom-scrollbar {
-      opacity: 0.6;
-    }
-
-    .column:hover .custom-scrollbar.visible {
-      opacity: 0.8;
-    }
-
-    /* Dark mode scrollbar adjustments */
-    [data-theme="dark"] .custom-scrollbar-thumb {
-      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.5);
-    }
-
-    [data-theme="dark"] .custom-scrollbar-thumb:hover {
-      box-shadow: 0 3px 8px rgba(255, 107, 53, 0.6);
-    }
-
-    /* Dark mode specific adjustments */
-    [data-theme="dark"] .column {
-      background-color: var(--bg-tertiary);
-    }
-
-    [data-theme="dark"] .card {
-      background-color: var(--bg-secondary);
-      border-color: var(--border-color);
-    }
-
-    [data-theme="dark"] .card:hover {
-      border-color: var(--accent-primary);
-      box-shadow: 0px 4px 12px var(--hover-shadow);
-    }
-
-    [data-theme="dark"] .modal-content {
-      background-color: var(--bg-secondary);
-      border-color: var(--border-color);
-    }
   </style>
 </head>
 <body>
@@ -930,9 +923,9 @@
       <button id="refreshBtn" style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
-      <button id="debugBtn" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;">
-        <i class="fas fa-bug"></i> Debug
-      </button>
+<!--      <button id="debugBtn" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;">-->
+<!--        <i class="fas fa-bug"></i> Debug-->
+<!--      </button>-->
       <button id="themeToggle" class="theme-toggle">
         <i class="fas fa-moon" id="themeIcon"></i>
         <span id="themeText">Dark</span>
@@ -1293,18 +1286,32 @@
       // Show scrollbar
       scrollbarEl.classList.add('visible');
 
-      // Calculate thumb size and position
+      // Calculate thumb size (proportional to visible content)
+      const thumbHeightRatio = clientHeight / scrollHeight;
       const scrollbarHeight = clientHeight;
-      const thumbHeight = Math.max(20, (clientHeight / scrollHeight) * scrollbarHeight);
-      const thumbTop = (scrollTop / (scrollHeight - clientHeight)) * (scrollbarHeight - thumbHeight);
+      const thumbHeight = Math.max(20, thumbHeightRatio * scrollbarHeight);
+
+      // Calculate thumb position (proportional to scroll position)
+      const maxScrollTop = scrollHeight - clientHeight;
+      const scrollRatio = scrollTop / maxScrollTop;
+      const maxThumbTop = scrollbarHeight - thumbHeight;
+      const thumbTop = scrollRatio * maxThumbTop;
 
       // Update thumb styles
       thumbEl.style.height = `${thumbHeight}px`;
       thumbEl.style.top = `${thumbTop}px`;
 
-      // Add smooth transition
-      if (!thumbEl.style.transition) {
-        thumbEl.style.transition = 'all 0.1s ease';
+      // Debug logging for first column
+      if (contentEl.id === 'newColumn' && scrollTop === 0) {
+        console.log(`📏 Scrollbar debug for ${contentEl.id}:`, {
+          scrollHeight,
+          clientHeight,
+          scrollTop,
+          thumbHeight,
+          thumbTop,
+          thumbHeightRatio,
+          scrollRatio
+        });
       }
     }
 
@@ -1323,6 +1330,7 @@
       }, 100);
     }
   }
+
   // Enhanced column mapping for flexible header detection
   const COLUMN_MAPPINGS = {
     // ID mappings
@@ -2485,6 +2493,9 @@
     // Initialize sidebar manager
     new SidebarManager();
 
+    // Initialize custom scrollbar manager
+    customScrollbarManager = new CustomScrollbarManager();
+
     loadData();
   });
 
@@ -2500,6 +2511,9 @@
 
     // Initialize sidebar manager
     new SidebarManager();
+
+    // Initialize custom scrollbar manager
+    customScrollbarManager = new CustomScrollbarManager();
 
     loadData();
   }
