@@ -369,6 +369,14 @@
     .column-content {
       max-height: calc(100vh - 200px);
       overflow-y: auto;
+      position: relative;
+      /* Hide default scrollbar on WebKit browsers */
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    .column-content::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
     }
 
     .card {
@@ -813,6 +821,64 @@
       }
     }
 
+    /* Custom Elegant Scrollbar */
+    .custom-scrollbar {
+      position: absolute;
+      right: 4px;
+      top: 0;
+      width: 6px;
+      background: transparent;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.3s ease, width 0.2s ease;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .custom-scrollbar.visible {
+      opacity: 0.6;
+    }
+
+    .custom-scrollbar:hover,
+    .column-content:hover + .custom-scrollbar {
+      opacity: 0.8;
+      width: 8px;
+    }
+
+    .custom-scrollbar-thumb {
+      position: absolute;
+      right: 0;
+      width: 100%;
+      background: linear-gradient(45deg, var(--accent-primary) 0%, #ff8c42 100%);
+      border-radius: 3px;
+      min-height: 20px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+
+    .custom-scrollbar-thumb:hover {
+      background: linear-gradient(45deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+      box-shadow: 0 3px 8px rgba(255, 107, 53, 0.4);
+      transform: scaleX(1.2);
+    }
+
+    .column:hover .custom-scrollbar {
+      opacity: 0.6;
+    }
+
+    .column:hover .custom-scrollbar.visible {
+      opacity: 0.8;
+    }
+
+    /* Dark mode scrollbar adjustments */
+    [data-theme="dark"] .custom-scrollbar-thumb {
+      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.5);
+    }
+
+    [data-theme="dark"] .custom-scrollbar-thumb:hover {
+      box-shadow: 0 3px 8px rgba(255, 107, 53, 0.6);
+    }
+
     /* Dark mode specific adjustments */
     [data-theme="dark"] .column {
       background-color: var(--bg-tertiary);
@@ -861,9 +927,9 @@
       <button id="refreshBtn" style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
-<!--      <button id="debugBtn" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;">-->
-<!--        <i class="fas fa-bug"></i> Debug-->
-<!--      </button>-->
+      <button id="debugBtn" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;">
+        <i class="fas fa-bug"></i> Debug
+      </button>
       <button id="themeToggle" class="theme-toggle">
         <i class="fas fa-moon" id="themeIcon"></i>
         <span id="themeText">Dark</span>
@@ -970,6 +1036,9 @@
           <span class="column-count" id="newCount">0</span>
         </div>
         <div class="column-content" id="newColumn"></div>
+        <div class="custom-scrollbar" id="newScrollbar">
+          <div class="custom-scrollbar-thumb" id="newScrollbarThumb"></div>
+        </div>
       </div>
 
       <div class="column">
@@ -978,6 +1047,9 @@
           <span class="column-count" id="prioritisedCount">0</span>
         </div>
         <div class="column-content" id="prioritisedColumn"></div>
+        <div class="custom-scrollbar" id="prioritisedScrollbar">
+          <div class="custom-scrollbar-thumb" id="prioritisedScrollbarThumb"></div>
+        </div>
       </div>
 
       <div class="column">
@@ -986,6 +1058,9 @@
           <span class="column-count" id="scopingCount">0</span>
         </div>
         <div class="column-content" id="scopingColumn"></div>
+        <div class="custom-scrollbar" id="scopingScrollbar">
+          <div class="custom-scrollbar-thumb" id="scopingScrollbarThumb"></div>
+        </div>
       </div>
 
       <div class="column">
@@ -994,6 +1069,9 @@
           <span class="column-count" id="inProgressCount">0</span>
         </div>
         <div class="column-content" id="inProgressColumn"></div>
+        <div class="custom-scrollbar" id="inProgressScrollbar">
+          <div class="custom-scrollbar-thumb" id="inProgressScrollbarThumb"></div>
+        </div>
       </div>
 
       <div class="column">
@@ -1002,6 +1080,9 @@
           <span class="column-count" id="operationalCount">0</span>
         </div>
         <div class="column-content" id="operationalColumn"></div>
+        <div class="custom-scrollbar" id="operationalScrollbar">
+          <div class="custom-scrollbar-thumb" id="operationalScrollbarThumb"></div>
+        </div>
       </div>
 
       <div class="column">
@@ -1010,6 +1091,9 @@
           <span class="column-count" id="completedCount">0</span>
         </div>
         <div class="column-content" id="completedColumn"></div>
+        <div class="custom-scrollbar" id="completedScrollbar">
+          <div class="custom-scrollbar-thumb" id="completedScrollbarThumb"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1095,6 +1179,7 @@
   let filteredData = [];
   let rawHeaders = [];
   let columnMapping = {};
+  let customScrollbarManager;
 
   // Theme Management
   class ThemeManager {
@@ -1149,6 +1234,92 @@
     }
   }
 
+  // Custom Scrollbar Manager
+  class CustomScrollbarManager {
+    constructor() {
+      this.columns = [
+        { content: 'newColumn', scrollbar: 'newScrollbar', thumb: 'newScrollbarThumb' },
+        { content: 'prioritisedColumn', scrollbar: 'prioritisedScrollbar', thumb: 'prioritisedScrollbarThumb' },
+        { content: 'scopingColumn', scrollbar: 'scopingScrollbar', thumb: 'scopingScrollbarThumb' },
+        { content: 'inProgressColumn', scrollbar: 'inProgressScrollbar', thumb: 'inProgressScrollbarThumb' },
+        { content: 'operationalColumn', scrollbar: 'operationalScrollbar', thumb: 'operationalScrollbarThumb' },
+        { content: 'completedColumn', scrollbar: 'completedScrollbar', thumb: 'completedScrollbarThumb' }
+      ];
+      this.init();
+    }
+
+    init() {
+      this.columns.forEach(column => {
+        const contentEl = document.getElementById(column.content);
+        const scrollbarEl = document.getElementById(column.scrollbar);
+        const thumbEl = document.getElementById(column.thumb);
+
+        if (!contentEl || !scrollbarEl || !thumbEl) return;
+
+        // Add scroll event listener
+        contentEl.addEventListener('scroll', () => {
+          this.updateScrollbar(contentEl, scrollbarEl, thumbEl);
+        });
+
+        // Add resize observer for dynamic content
+        if (window.ResizeObserver) {
+          const resizeObserver = new ResizeObserver(() => {
+            this.updateScrollbar(contentEl, scrollbarEl, thumbEl);
+          });
+          resizeObserver.observe(contentEl);
+        }
+
+        // Initial update
+        setTimeout(() => {
+          this.updateScrollbar(contentEl, scrollbarEl, thumbEl);
+        }, 100);
+      });
+    }
+
+    updateScrollbar(contentEl, scrollbarEl, thumbEl) {
+      const scrollHeight = contentEl.scrollHeight;
+      const clientHeight = contentEl.clientHeight;
+      const scrollTop = contentEl.scrollTop;
+
+      // Hide scrollbar if content doesn't overflow
+      if (scrollHeight <= clientHeight) {
+        scrollbarEl.classList.remove('visible');
+        return;
+      }
+
+      // Show scrollbar
+      scrollbarEl.classList.add('visible');
+
+      // Calculate thumb size and position
+      const scrollbarHeight = clientHeight;
+      const thumbHeight = Math.max(20, (clientHeight / scrollHeight) * scrollbarHeight);
+      const thumbTop = (scrollTop / (scrollHeight - clientHeight)) * (scrollbarHeight - thumbHeight);
+
+      // Update thumb styles
+      thumbEl.style.height = `${thumbHeight}px`;
+      thumbEl.style.top = `${thumbTop}px`;
+
+      // Add smooth transition
+      if (!thumbEl.style.transition) {
+        thumbEl.style.transition = 'all 0.1s ease';
+      }
+    }
+
+    // Update all scrollbars (called after content changes)
+    updateAll() {
+      setTimeout(() => {
+        this.columns.forEach(column => {
+          const contentEl = document.getElementById(column.content);
+          const scrollbarEl = document.getElementById(column.scrollbar);
+          const thumbEl = document.getElementById(column.thumb);
+
+          if (contentEl && scrollbarEl && thumbEl) {
+            this.updateScrollbar(contentEl, scrollbarEl, thumbEl);
+          }
+        });
+      }, 100);
+    }
+  }
   // Enhanced column mapping for flexible header detection
   const COLUMN_MAPPINGS = {
     // ID mappings
@@ -1515,7 +1686,7 @@
       filteredData = [...allData];
 
       // Update UI
-      initialiseFilters();
+      initializeFilters();
       renderBoard();
       updateCounts();
       updateDebugInfo(`Database data loaded successfully: ${allData.length} ideas`);
@@ -1707,9 +1878,14 @@
     console.log('📊 Sample record:', allData[0]);
 
     // Update UI
-    initialiseFilters();
+    initializeFilters();
     renderBoard();
     updateCounts();
+
+    // Update scrollbars after filtering
+    if (customScrollbarManager) {
+      customScrollbarManager.updateAll();
+    }
     updateDebugInfo(`Data loaded successfully from ${source}: ${allData.length} ideas`);
 
     // Verify rendering
@@ -1812,14 +1988,14 @@
     filteredData = [...allData];
     console.log('📊 Loaded sample data:', allData.length, 'improvement ideas');
 
-    initialiseFilters();
+    initializeFilters();
     renderBoard();
     updateCounts();
     updateDebugInfo('Sample data loaded - upload your Excel file to see real data');
   }
 
-  // initialise filter dropdowns
-  function initialiseFilters() {
+  // Initialize filter dropdowns
+  function initializeFilters() {
     const domains = [...new Set(allData.map(item => item.Domain).filter(Boolean))];
     const statuses = [...new Set(allData.map(item => item.Status).filter(Boolean))];
 
@@ -1964,6 +2140,11 @@
     });
 
     console.log('✅ Cards rendered per column:', columnCounts);
+
+    // Update custom scrollbars after rendering
+    if (customScrollbarManager) {
+      customScrollbarManager.updateAll();
+    }
 
     // Add empty state if no items
     Object.entries(columns).forEach(([columnKey, column]) => {
@@ -2274,7 +2455,7 @@
   });
 
   // Debug button
-  // document.getElementById('debugBtn').addEventListener('click', toggleDebug);
+  document.getElementById('debugBtn').addEventListener('click', toggleDebug);
 
   // Close modal when clicking outside
   document.getElementById('modal').addEventListener('click', function(e) {
@@ -2290,31 +2471,31 @@
     }
   });
 
-  // initialise the application
+  // Initialize the application
   document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
     console.log('📊 Loading data from Excel file...');
 
-    // initialise theme manager
+    // Initialize theme manager
     new ThemeManager();
 
-    // initialise sidebar manager
+    // Initialize sidebar manager
     new SidebarManager();
 
     loadData();
   });
 
-  // initialise immediately if DOM is already loaded
+  // Initialize immediately if DOM is already loaded
   if (document.readyState === 'loading') {
     // Do nothing, wait for DOMContentLoaded
   } else {
     console.log('🚀 SSC Continuous Improvement Dashboard Starting...');
     console.log('📊 Loading data from Excel file...');
 
-    // Initialise theme manager
+    // Initialize theme manager
     new ThemeManager();
 
-    // Initialise sidebar manager
+    // Initialize sidebar manager
     new SidebarManager();
 
     loadData();
